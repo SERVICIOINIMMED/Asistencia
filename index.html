@@ -6,17 +6,42 @@
     <title>Registro de Asistencia Digital</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body class="bg-slate-50 min-h-screen p-4 md:p-8 font-sans text-slate-800">
+    
+    <!-- Configuración para usar el color corporativo de INIMMED en Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#fe712f',
+                        primaryHover: '#e65c1e',
+                        brandBg: '#f0f2f5'
+                    }
+                }
+            }
+        }
+    </script>
 
-    <div class="max-w-6xl mx-auto">
+    <style>
+        /* ESTILOS DE INIMMED (Limpio y Profesional) */
+        :root { --primary: #fe712f; --bg: #f0f2f5; --star-color: #ffd700; --star-empty: #ddd; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: #333; }
+        
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        
+        header { text-align: center; margin-bottom: 30px; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <div class="max-w-6xl mx-auto mt-4">
         <!-- Encabezado -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-4">
                 <!-- Selector de Logo -->
                 <div class="relative group cursor-pointer shrink-0" onclick="document.getElementById('logoInput').click()" title="Haz clic para cambiar el logo">
-                    <!-- Imagen por defecto -->
-                    <img id="logoEmpresa" src="Logo con fondo2.jpg.jpeg" alt="Logo Empresa" class="h-14 w-14 md:h-16 md:w-auto min-w-[4rem] object-contain rounded-lg border border-slate-200 shadow-sm bg-slate-50">
+                    <!-- Imagen predeterminada configurada a la ruta solicitada -->
+                    <img id="logoEmpresa" src="Logo con fondo2.jpg.jpeg" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=INIMMED&background=fe712f&color=fff&size=128&font-size=0.25';" alt="Logo Empresa" class="h-14 w-14 md:h-16 md:w-auto min-w-[4rem] object-contain rounded-lg border border-slate-200 shadow-sm bg-white">
                     
                     <!-- Overlay oscuro al pasar el mouse -->
                     <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
@@ -28,7 +53,7 @@
                 </div>
                 
                 <div>
-                    <h1 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-clipboard-user text-blue-600 mr-2 hidden sm:inline"></i> Control de Asistencia</h1>
+                    <h1 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-clipboard-user text-primary mr-2 hidden sm:inline"></i> Control de Asistencia</h1>
                     <p class="text-sm text-slate-500 mt-1">Registra las entradas y salidas para exportar a Excel (CSV)</p>
                 </div>
             </div>
@@ -49,15 +74,16 @@
                     <div class="space-y-4 mb-6">
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Fecha</label>
-                            <input type="date" id="fecha" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <input type="date" id="fecha" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Departamento</label>
-                            <select id="departamento" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
+                            <select id="departamento" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white">
                                 <option value="" disabled selected>Selecciona un departamento...</option>
                                 <option value="Administración">Administración</option>
-                                <option value="Servicio">Servicio</option>
-                                <option value="Marketing">Marketing</option>
+                                <option value="Operaciones">Operaciones</option>
+                                <option value="Recursos Humanos">Recursos Humanos</option>
+                                <option value="Tecnología (TI)">Tecnología (TI)</option>
                                 <option value="Ventas">Ventas</option>
                             </select>
                         </div>
@@ -69,48 +95,43 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Nombre del Empleado *</label>
-                            <select id="nombre" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
+                            <select id="nombre" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white">
                                 <option value="" disabled selected>Selecciona un empleado...</option>
-                                <!-- Puedes editar, agregar o quitar nombres en esta lista -->
-                                <option value="Lic. Jennifer Gabriela Santos Javier">Lic. Jennifer Gabriela Santos Javier</option>
-                                <option value="Francisco Xavier Quintana Ortega">Francisco Xavier Quintana Ortega</option>
-                                <option value="Ing. Israel Pastelín Morales">Ing. Israel Pastelín Morales</option>
-                                <option value="Ing. José Salazar Gasperino">Ing. José Salazar Gasperino</option>
-                                <option value="Ing. Erick Jair García González">Ing. Erick Jair García González</option>
-                                <option value="Ing. Dagoberto de Jesús Guevara Díaz">Ing. Dagoberto de Jesús Guevara Díaz</option>
-                                <option value="L.C. Maribel Lozano Lázaro">L.C. Maribel Lozano Lázaro</option>
-                                <option value="Alan Blanco Aviléz">Alan Blanco Aviléz</option>
-                                <option value="Cristian Barragán Hernández">Cristian Barragán Hernández</option>
-                                
+                                <option value="Ana Martínez">Ana Martínez</option>
+                                <option value="Carlos López">Carlos López</option>
+                                <option value="Juan Pérez">Juan Pérez</option>
+                                <option value="Laura Gómez">Laura Gómez</option>
+                                <option value="María García">María García</option>
+                                <option value="Roberto Fernández">Roberto Fernández</option>
                             </select>
                         </div>
                         
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Hora Entrada *</label>
-                                <input type="time" id="horaEntrada" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <input type="time" id="horaEntrada" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Inicio Comida</label>
-                                <input type="time" id="horaInicioComida" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-500">
+                                <input type="time" id="horaInicioComida" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-slate-500">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Término Comida</label>
-                                <input type="time" id="horaTerminoComida" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-500">
+                                <input type="time" id="horaTerminoComida" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-slate-500">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Hora Salida</label>
-                                <input type="time" id="horaSalida" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-500">
+                                <input type="time" id="horaSalida" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-slate-500">
                             </div>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Observaciones / Retardos</label>
-                            <input type="text" id="observaciones" placeholder="Opcional..." class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <input type="text" id="observaciones" placeholder="Opcional..." class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm transition duration-200 flex justify-center items-center gap-2">
+                    <button type="submit" class="w-full mt-6 bg-primary hover:bg-primaryHover text-white font-medium py-2.5 px-4 rounded-lg shadow-sm transition duration-200 flex justify-center items-center gap-2">
                         <i class="fa-solid fa-plus"></i> Agregar a la Lista
                     </button>
                 </form>
@@ -120,7 +141,7 @@
             <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
                 <div class="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                     <h2 class="text-lg font-semibold text-slate-800">Registros del Día</h2>
-                    <span id="contadorRegistros" class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">0 empleados</span>
+                    <span id="contadorRegistros" class="bg-orange-100 text-orange-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">0 empleados</span>
                 </div>
                 
                 <div class="overflow-x-auto flex-1">
@@ -158,11 +179,34 @@
         // Array para almacenar los registros en memoria
         let registros = [];
 
-        // Inicializar la fecha de hoy por defecto
+        // Inicializar la fecha de hoy por defecto y cargar logo
         document.addEventListener('DOMContentLoaded', () => {
             const hoy = new Date().toISOString().split('T')[0];
             document.getElementById('fecha').value = hoy;
+
+            // Revisar si ya hay un logo guardado en la memoria del navegador
+            const logoGuardado = localStorage.getItem('logoEmpresaBase64');
+            if(logoGuardado) {
+                document.getElementById('logoEmpresa').src = logoGuardado;
+            }
         });
+
+        // Función para cambiar y guardar el logo
+        function cambiarLogo(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Image = e.target.result;
+                    document.getElementById('logoEmpresa').src = base64Image;
+                    
+                    // Guardar en localStorage para que no se borre al recargar la página
+                    localStorage.setItem('logoEmpresaBase64', base64Image);
+                    mostrarToast('Logo actualizado correctamente.');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
 
         // Función para mostrar notificaciones estilo "Toast"
         function mostrarToast(mensaje, tipo = 'success') {
