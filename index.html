@@ -12,9 +12,25 @@
     <div class="max-w-6xl mx-auto">
         <!-- Encabezado -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-clipboard-user text-blue-600 mr-2"></i> Control de Asistencia</h1>
-                <p class="text-sm text-slate-500 mt-1">Registra las entradas y salidas para exportar a Excel (CSV)</p>
+            <div class="flex items-center gap-4">
+                <!-- Selector de Logo -->
+                <div class="relative group cursor-pointer shrink-0" onclick="document.getElementById('logoInput').click()" title="Haz clic para cambiar el logo">
+                    <!-- Imagen por defecto -->
+                    <img id="logoEmpresa" src="https://ui-avatars.com/api/?name=Tu+Logo&background=e2e8f0&color=475569&size=128&font-size=0.25" alt="Logo Empresa" class="h-14 w-14 md:h-16 md:w-auto min-w-[4rem] object-contain rounded-lg border border-slate-200 shadow-sm bg-slate-50">
+                    
+                    <!-- Overlay oscuro al pasar el mouse -->
+                    <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                        <i class="fa-solid fa-camera text-white"></i>
+                    </div>
+                    
+                    <!-- Input oculto para seleccionar archivo -->
+                    <input type="file" id="logoInput" class="hidden" accept="image/*" onchange="cambiarLogo(event)">
+                </div>
+                
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-clipboard-user text-blue-600 mr-2 hidden sm:inline"></i> Control de Asistencia</h1>
+                    <p class="text-sm text-slate-500 mt-1">Registra las entradas y salidas para exportar a Excel (CSV)</p>
+                </div>
             </div>
             <div class="flex gap-3">
                 <button onclick="exportarCSV()" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition duration-200 flex items-center gap-2">
@@ -40,9 +56,8 @@
                             <select id="departamento" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
                                 <option value="" disabled selected>Selecciona un departamento...</option>
                                 <option value="Administración">Administración</option>
-                                <option value="Operaciones">Operaciones</option>
-                                <option value="Recursos Humanos">Recursos Humanos</option>
-                                <option value="Tecnología (TI)">Tecnología (TI)</option>
+                                <option value="Servicio">Servicio</option>
+                                <option value="Marketing">Marketing</option>
                                 <option value="Ventas">Ventas</option>
                             </select>
                         </div>
@@ -57,12 +72,16 @@
                             <select id="nombre" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
                                 <option value="" disabled selected>Selecciona un empleado...</option>
                                 <!-- Puedes editar, agregar o quitar nombres en esta lista -->
-                                <option value="Ana Martínez">Ana Martínez</option>
-                                <option value="Carlos López">Carlos López</option>
-                                <option value="Juan Pérez">Juan Pérez</option>
-                                <option value="Laura Gómez">Laura Gómez</option>
-                                <option value="María García">María García</option>
-                                <option value="Roberto Fernández">Roberto Fernández</option>
+                                <option value="Lic. Jennifer Gabriela Santos Javier">Lic. Jennifer Gabriela Santos Javier</option>
+                                <option value="Francisco Xavier Quintana Ortega">Francisco Xavier Quintana Ortega</option>
+                                <option value="Ing. Israel Pastelín Morales">Ing. Israel Pastelín Morales</option>
+                                <option value="Ing. José Salazar Gasperino">Ing. José Salazar Gasperino</option>
+                                <option value="Ing. Erick Jair García González">Ing. Erick Jair García González</option>
+                                <option value="Ing. Dagoberto de Jesús Guevara Díaz">Ing. Dagoberto de Jesús Guevara Díaz</option>
+                                <option value="L.C. Maribel Lozano Lázaro">L.C. Maribel Lozano Lázaro</option>
+                                <option value="Alan Blanco Aviléz">Alan Blanco Aviléz</option>
+                                <option value="Cristian Barragán Hernández">Cristian Barragán Hernández</option>
+                                
                             </select>
                         </div>
                         
