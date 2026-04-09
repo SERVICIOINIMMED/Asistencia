@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Asistencia Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-50 min-h-screen p-4 md:p-8 font-sans text-slate-800">
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Encabezado -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-clipboard-user text-blue-600 mr-2"></i> Control de Asistencia</h1>
+                <p class="text-sm text-slate-500 mt-1">Registra las entradas y salidas para exportar a Excel (CSV)</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="exportarCSV()" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition duration-200 flex items-center gap-2">
+                    <i class="fa-solid fa-file-csv"></i> Exportar a CSV
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Panel de Formulario -->
+            <div class="lg:col-span-1 bg-white rounded-xl shadow-sm border border-slate-200 p-6 h-fit">
+                <h2 class="text-lg font-semibold text-slate-800 mb-4 border-b pb-2">Nuevo Registro</h2>
+                
+                <form id="registroForm" onsubmit="agregarRegistro(event)">
+                    <!-- Datos Generales -->
+                    <div class="space-y-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Fecha</label>
+                            <input type="date" id="fecha" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Departamento</label>
+                            <select id="departamento" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
+                                <option value="" disabled selected>Selecciona un departamento...</option>
+                                <option value="Administración">Administración</option>
+                                <option value="Operaciones">Operaciones</option>
+                                <option value="Recursos Humanos">Recursos Humanos</option>
+                                <option value="Tecnología (TI)">Tecnología (TI)</option>
+                                <option value="Ventas">Ventas</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr class="border-slate-200 mb-6">
+
+                    <!-- Datos del Empleado -->
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Nombre del Empleado *</label>
+                            <select id="nombre" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
+                                <option value="" disabled selected>Selecciona un empleado...</option>
+                                <!-- Puedes editar, agregar o quitar nombres en esta lista -->
+                                <option value="Ana Martínez">Ana Martínez</option>
+                                <option value="Carlos López">Carlos López</option>
+                                <option value="Juan Pérez">Juan Pérez</option>
+                                <option value="Laura Gómez">Laura Gómez</option>
+                                <option value="María García">María García</option>
+                                <option value="Roberto Fernández">Roberto Fernández</option>
+                            </select>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Hora Entrada *</label>
+                                <input type="time" id="horaEntrada" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Inicio Comida</label>
+                                <input type="time" id="horaInicioComida" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Término Comida</label>
+                                <input type="time" id="horaTerminoComida" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Hora Salida</label>
+                                <input type="time" id="horaSalida" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Observaciones / Retardos</label>
+                            <input type="text" id="observaciones" placeholder="Opcional..." class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg shadow-sm transition duration-200 flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Agregar a la Lista
+                    </button>
+                </form>
+            </div>
+
+            <!-- Panel de Tabla -->
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                <div class="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                    <h2 class="text-lg font-semibold text-slate-800">Registros del Día</h2>
+                    <span id="contadorRegistros" class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">0 empleados</span>
+                </div>
+                
+                <div class="overflow-x-auto flex-1">
+                    <table class="w-full text-sm text-left text-slate-600">
+                        <thead class="text-xs text-slate-700 uppercase bg-slate-100 border-b border-slate-200">
+                            <tr>
+                                <th scope="col" class="px-4 py-3">Nombre</th>
+                                <th scope="col" class="px-4 py-3">Entrada</th>
+                                <th scope="col" class="px-4 py-3">Inicio Comida</th>
+                                <th scope="col" class="px-4 py-3">Fin Comida</th>
+                                <th scope="col" class="px-4 py-3">Salida</th>
+                                <th scope="col" class="px-4 py-3">Observaciones</th>
+                                <th scope="col" class="px-4 py-3 text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaRegistros">
+                            <!-- Los registros se insertarán aquí con JavaScript -->
+                            <tr id="filaVacia">
+                                <td colspan="7" class="px-4 py-8 text-center text-slate-500">
+                                    <i class="fa-regular fa-folder-open text-3xl mb-2 opacity-50"></i><br>
+                                    No hay registros todavía. Agrega empleados usando el formulario.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor para Notificaciones Toast -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+
+    <script>
+        // Array para almacenar los registros en memoria
+        let registros = [];
+
+        // Inicializar la fecha de hoy por defecto
+        document.addEventListener('DOMContentLoaded', () => {
+            const hoy = new Date().toISOString().split('T')[0];
+            document.getElementById('fecha').value = hoy;
+        });
+
+        // Función para mostrar notificaciones estilo "Toast"
+        function mostrarToast(mensaje, tipo = 'success') {
+            const toast = document.createElement('div');
+            
+            // Estilos basados en el tipo de mensaje
+            let colorClases = tipo === 'success' 
+                ? 'bg-green-100 border-green-500 text-green-800' 
+                : 'bg-red-100 border-red-500 text-red-800';
+            
+            let icono = tipo === 'success' 
+                ? '<i class="fa-solid fa-check-circle text-green-600 mr-2"></i>' 
+                : '<i class="fa-solid fa-triangle-exclamation text-red-600 mr-2"></i>';
+
+            toast.className = `flex items-center p-4 mb-2 border-l-4 rounded shadow-md transition-opacity duration-300 ${colorClases}`;
+            toast.innerHTML = `${icono} <span class="font-medium">${mensaje}</span>`;
+            
+            const container = document.getElementById('toastContainer');
+            container.appendChild(toast);
+
+            // Desaparecer después de 3 segundos
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => container.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        // Función para agregar un registro desde el formulario
+        function agregarRegistro(event) {
+            event.preventDefault(); // Evitar que la página se recargue
+
+            // Obtener valores
+            const fecha = document.getElementById('fecha').value;
+            const departamento = document.getElementById('departamento').value || 'N/A';
+            const nombre = document.getElementById('nombre').value;
+            const horaEntrada = document.getElementById('horaEntrada').value;
+            const horaInicioComida = document.getElementById('horaInicioComida').value || '--:--';
+            const horaTerminoComida = document.getElementById('horaTerminoComida').value || '--:--';
+            const horaSalida = document.getElementById('horaSalida').value || '--:--';
+            const observaciones = document.getElementById('observaciones').value || '';
+
+            // Crear objeto de registro
+            const nuevoRegistro = {
+                id: Date.now(), // ID único basado en el tiempo
+                fecha,
+                departamento,
+                nombre,
+                horaEntrada,
+                horaInicioComida,
+                horaTerminoComida,
+                horaSalida,
+                observaciones
+            };
+
+            // Agregar al array
+            registros.push(nuevoRegistro);
+
+            // Actualizar la interfaz
+            actualizarTabla();
+            
+            // Limpiar solo los campos específicos del empleado (mantener fecha y departamento)
+            document.getElementById('nombre').value = '';
+            document.getElementById('horaEntrada').value = '';
+            document.getElementById('horaInicioComida').value = '';
+            document.getElementById('horaTerminoComida').value = '';
+            document.getElementById('horaSalida').value = '';
+            document.getElementById('observaciones').value = '';
+            
+            // Regresar el foco al nombre para captura rápida
+            document.getElementById('nombre').focus();
+
+            mostrarToast('Empleado agregado a la lista.');
+        }
+
+        // Función para eliminar un registro específico
+        function eliminarRegistro(id) {
+            registros = registros.filter(r => r.id !== id);
+            actualizarTabla();
+            mostrarToast('Registro eliminado.', 'error');
+        }
+
+        // Función para pintar la tabla con los datos actuales
+        function actualizarTabla() {
+            const tbody = document.getElementById('tablaRegistros');
+            const contador = document.getElementById('contadorRegistros');
+            
+            // Limpiar tabla actual
+            tbody.innerHTML = '';
+            
+            // Actualizar contador
+            contador.textContent = `${registros.length} empleado${registros.length !== 1 ? 's' : ''}`;
+
+            if (registros.length === 0) {
+                // Mostrar mensaje de vacío
+                tbody.innerHTML = `
+                    <tr id="filaVacia">
+                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">
+                            <i class="fa-regular fa-folder-open text-3xl mb-2 opacity-50"></i><br>
+                            No hay registros todavía. Agrega empleados usando el formulario.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Generar filas
+            registros.forEach((registro) => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-100 hover:bg-slate-50 transition-colors';
+                
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-medium text-slate-800">${registro.nombre}</td>
+                    <td class="px-4 py-3 text-green-600 font-semibold">${registro.horaEntrada}</td>
+                    <td class="px-4 py-3 text-orange-500">${registro.horaInicioComida}</td>
+                    <td class="px-4 py-3 text-orange-500">${registro.horaTerminoComida}</td>
+                    <td class="px-4 py-3 text-slate-500">${registro.horaSalida}</td>
+                    <td class="px-4 py-3 text-slate-500 italic text-xs">${registro.observaciones}</td>
+                    <td class="px-4 py-3 text-center">
+                        <button onclick="eliminarRegistro(${registro.id})" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded transition-colors" title="Eliminar registro">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Función para generar y descargar el archivo CSV
+        function exportarCSV() {
+            if (registros.length === 0) {
+                mostrarToast('No hay datos para exportar.', 'error');
+                return;
+            }
+
+            // 1. Crear los encabezados del CSV
+            const encabezados = ['Fecha', 'Departamento', 'Nombre del Empleado', 'Hora Entrada', 'Inicio Comida', 'Término Comida', 'Hora Salida', 'Observaciones'];
+            
+            // 2. Formatear las filas
+            // Nota: Envolvemos los textos en comillas dobles para evitar que las comas en los nombres u observaciones rompan el CSV
+            const filas = registros.map(r => {
+                return [
+                    r.fecha,
+                    `"${r.departamento}"`,
+                    `"${r.nombre}"`,
+                    r.horaEntrada,
+                    r.horaInicioComida,
+                    r.horaTerminoComida,
+                    r.horaSalida,
+                    `"${r.observaciones.replace(/"/g, '""')}"` // Escapar comillas dobles internas
+                ].join(',');
+            });
+
+            // 3. Unir todo con saltos de línea (\n)
+            // Añadimos el BOM (Byte Order Mark) de UTF-8 para que Excel lea bien los acentos
+            const contenidoCSV = '\uFEFF' + [encabezados.join(','), ...filas].join('\n');
+
+            // 4. Crear un Blob (objeto de archivo binario en el navegador)
+            const blob = new Blob([contenidoCSV], { type: 'text/csv;charset=utf-8;' });
+            
+            // 5. Crear un enlace de descarga invisible y hacer clic en él
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            
+            // Generar nombre de archivo basado en la fecha actual
+            const fechaDocumento = document.getElementById('fecha').value || new Date().toISOString().split('T')[0];
+            const nombreArchivo = `Asistencia_${fechaDocumento}.csv`;
+
+            link.setAttribute('href', url);
+            link.setAttribute('download', nombreArchivo);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            mostrarToast('Archivo CSV descargado con éxito.');
+        }
+    </script>
+</body>
+</html>
