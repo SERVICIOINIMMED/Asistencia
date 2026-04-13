@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Asistencia Digital</title>
+    <title>INIMMED - Sistema de Asistencia</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-    <!-- Configuración para usar el color corporativo de INIMMED en Tailwind -->
     <script>
         tailwind.config = {
             theme: {
@@ -23,79 +22,68 @@
     </script>
 
     <style>
-        /* ESTILOS DE INIMMED (Limpio y Profesional) */
-        :root { --primary: #fe712f; --bg: #f0f2f5; --star-color: #ffd700; --star-empty: #ddd; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; color: #333; }
-        
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        
-        header { text-align: center; margin-bottom: 30px; }
+        :root { --primary: #fe712f; --bg: #f0f2f5; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg); margin: 0; color: #333; }
+        .tab-active { border-bottom: 3px solid var(--primary); color: var(--primary); font-weight: bold; }
+        .tab-inactive { color: #64748b; }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen pb-12">
 
-    <div class="max-w-6xl mx-auto mt-4">
-        <!-- Encabezado -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-4">
-                <!-- Selector de Logo -->
-                <div class="relative group cursor-pointer shrink-0" onclick="document.getElementById('logoInput').click()" title="Haz clic para cambiar el logo">
-                    <!-- Imagen predeterminada configurada a la ruta solicitada -->
-                    <img id="logoEmpresa" src="Logo con fondo 2.jpg.jpeg" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=INIMMED&background=fe712f&color=fff&size=128&font-size=0.25';" alt="Logo Empresa" class="h-14 w-14 md:h-16 md:w-auto min-w-[4rem] object-contain rounded-lg border border-slate-200 shadow-sm bg-white">
-                    
-                    <!-- Overlay oscuro al pasar el mouse -->
-                    <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-                        <i class="fa-solid fa-camera text-white"></i>
-                    </div>
-                    
-                    <!-- Input oculto para seleccionar archivo -->
-                    <input type="file" id="logoInput" class="hidden" accept="image/*" onchange="cambiarLogo(event)">
+    <!-- Navegación Superior -->
+    <nav class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-10">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-3">
+                    <img src="Logo con fondo2.jpg.jpeg" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=INIMMED&background=fe712f&color=fff&size=64&font-size=0.3';" alt="Logo" class="h-10 w-10 object-contain rounded bg-white">
+                    <span class="font-bold text-xl text-slate-800 tracking-tight">INIMMED</span>
                 </div>
-                
-                <div>
-                    <h1 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-clipboard-user text-primary mr-2 hidden sm:inline"></i> Control de Asistencia</h1>
-                    <p class="text-sm text-slate-500 mt-1">Registra las entradas y salidas para exportar a Excel (CSV)</p>
+                <div class="flex space-x-1 md:space-x-4">
+                    <button id="btnTabKiosko" onclick="cambiarVista('kiosko')" class="px-3 py-4 text-sm md:text-base transition-colors tab-active">
+                        <i class="fa-solid fa-mobile-screen-button mr-1"></i> <span class="hidden sm:inline">Modo</span> Checador
+                    </button>
+                    <button id="btnTabAdmin" onclick="cambiarVista('admin')" class="px-3 py-4 text-sm md:text-base transition-colors tab-inactive">
+                        <i class="fa-solid fa-user-tie mr-1"></i> Admin<span class="hidden sm:inline">istración</span>
+                    </button>
                 </div>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="exportarCSV()" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition duration-200 flex items-center gap-2">
-                    <i class="fa-solid fa-file-csv"></i> Exportar a CSV
-                </button>
             </div>
         </div>
+    </nav>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Panel de Formulario -->
-            <div class="lg:col-span-1 bg-white rounded-xl shadow-sm border border-slate-200 p-6 h-fit">
-                <h2 class="text-lg font-semibold text-slate-800 mb-4 border-b pb-2">Nuevo Registro</h2>
-                
-                <form id="registroForm" onsubmit="agregarRegistro(event)">
-                    <!-- Datos Generales -->
-                    <div class="space-y-4 mb-6">
+    <!-- Contenedor Principal -->
+    <div class="max-w-6xl mx-auto mt-6 px-4">
+
+        <!-- ==========================================
+             VISTA 1: KIOSKO / CHECADOR (Para Empleados)
+             ========================================== -->
+        <div id="vistaKiosko" class="block max-w-md mx-auto">
+            <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                <div class="bg-slate-50 p-6 text-center border-b border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-800">Registro de Asistencia</h2>
+                    <p class="text-slate-500 text-sm mt-1">Selecciona tu nombre para registrar tu horario actual.</p>
+                    <div id="relojActual" class="text-3xl font-mono font-bold text-primary mt-4 tracking-wider">--:--:--</div>
+                    <div id="fechaActual" class="text-slate-500 font-medium text-sm mt-1">Cargando fecha...</div>
+                </div>
+
+                <div class="p-6">
+                    <div class="space-y-5">
+                        <!-- Selector de Departamento -->
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Fecha</label>
-                            <input type="date" id="fecha" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Departamento</label>
-                            <select id="departamento" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white">
-                                <option value="" disabled selected>Selecciona un departamento...</option>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Área / Departamento</label>
+                            <select id="kioskoDepartamento" onchange="guardarDepartamento()" class="w-full border-2 border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white text-lg font-medium text-slate-800 transition-colors">
+                                <option value="" disabled selected>Selecciona tu área...</option>
                                 <option value="Administración">Administración</option>
                                 <option value="Servicio">Servicio</option>
                                 <option value="Marketing">Marketing</option>
                                 <option value="Ventas">Ventas</option>
                             </select>
                         </div>
-                    </div>
 
-                    <hr class="border-slate-200 mb-6">
-
-                    <!-- Datos del Empleado -->
-                    <div class="space-y-4">
+                        <!-- Selector de Nombre -->
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Nombre del Empleado *</label>
-                            <select id="nombre" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white">
-                                <option value="" disabled selected>Selecciona un empleado...</option>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">¿Quién eres?</label>
+                            <select id="kioskoEmpleado" onchange="evaluarEstadoEmpleado()" class="w-full border-2 border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white text-lg font-medium text-slate-800 transition-colors">
+                                <option value="" disabled selected>Toca aquí para buscar tu nombre...</option>
                                 <option value="Francisco Xavier Quintana Ortega">Francisco Xavier Quintana Ortega</option>
                                 <option value="Lic. Jennifer Gabriela Santos Javier">Lic. Jennifer Gabriela Santos Javier</option>
                                 <option value="Ing. Israel Pastelín Morales">Ing. Israel Pastelín Morales</option>
@@ -107,285 +95,422 @@
                                 <option value="Cristian Barragán Hernández">Cristian Barragán Hernández</option>
                             </select>
                         </div>
-                        
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Hora Entrada *</label>
-                                <input type="time" id="horaEntrada" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Inicio Comida</label>
-                                <input type="time" id="horaInicioComida" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-slate-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Término Comida</label>
-                                <input type="time" id="horaTerminoComida" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-slate-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Hora Salida</label>
-                                <input type="time" id="horaSalida" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-slate-500">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Observaciones / Retardos</label>
-                            <input type="text" id="observaciones" placeholder="Opcional..." class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                        </div>
                     </div>
 
-                    <button type="submit" class="w-full mt-6 bg-primary hover:bg-primaryHover text-white font-medium py-2.5 px-4 rounded-lg shadow-sm transition duration-200 flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-plus"></i> Agregar a la Lista
+                    <!-- Zona Dinámica de Acciones -->
+                    <div id="zonaAccion" class="mt-8 hidden text-center">
+                        <div id="estadoMensaje" class="text-slate-600 mb-4 bg-slate-50 p-3 rounded-lg border border-slate-100 text-sm">
+                            Tu estado actual aparecerá aquí.
+                        </div>
+                        
+                        <button id="btnRegistrarAccion" onclick="ejecutarAccion()" class="w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-3">
+                            <i id="iconoAccion" class="fa-solid fa-clock"></i>
+                            <span id="textoAccion">Registrar</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 text-center text-xs text-slate-400">
+                <i class="fa-solid fa-qrcode mr-1"></i> Escanea el QR de la oficina para abrir esta pantalla.
+            </div>
+        </div>
+
+        <!-- ==========================================
+             VISTA 2: ADMINISTRADOR (Tabla y CSV)
+             ========================================== -->
+        <div id="vistaAdmin" class="hidden">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-clipboard-user text-primary mr-2"></i> Panel de Control</h1>
+                    <p class="text-sm text-slate-500 mt-1">Visualiza los registros sincronizados en tiempo real por los empleados.</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="exportarCSV()" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-file-csv"></i> Exportar a CSV
                     </button>
-                </form>
+                </div>
             </div>
 
-            <!-- Panel de Tabla -->
-            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-                <div class="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                    <h2 class="text-lg font-semibold text-slate-800">Registros del Día</h2>
-                    <span id="contadorRegistros" class="bg-orange-100 text-orange-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">0 empleados</span>
-                </div>
-                
-                <div class="overflow-x-auto flex-1">
+            <!-- Filtros Admin -->
+            <div class="bg-white p-4 rounded-t-xl border border-b-0 border-slate-200 flex items-center gap-4">
+                <label class="font-medium text-sm text-slate-700">Ver registros del día:</label>
+                <input type="date" id="filtroFecha" onchange="window.actualizarTabla()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+            </div>
+
+            <div class="bg-white rounded-b-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-slate-600">
                         <thead class="text-xs text-slate-700 uppercase bg-slate-100 border-b border-slate-200">
                             <tr>
-                                <th scope="col" class="px-4 py-3">Nombre</th>
-                                <th scope="col" class="px-4 py-3">Entrada</th>
-                                <th scope="col" class="px-4 py-3">Inicio Comida</th>
-                                <th scope="col" class="px-4 py-3">Fin Comida</th>
-                                <th scope="col" class="px-4 py-3">Salida</th>
-                                <th scope="col" class="px-4 py-3">Observaciones</th>
-                                <th scope="col" class="px-4 py-3 text-center">Acción</th>
+                                <th class="px-4 py-3">Nombre</th>
+                                <th class="px-4 py-3">Entrada</th>
+                                <th class="px-4 py-3">Inicio Comida</th>
+                                <th class="px-4 py-3">Fin Comida</th>
+                                <th class="px-4 py-3">Salida</th>
+                                <th class="px-4 py-3 text-center">Acción</th>
                             </tr>
                         </thead>
                         <tbody id="tablaRegistros">
-                            <!-- Los registros se insertarán aquí con JavaScript -->
-                            <tr id="filaVacia">
-                                <td colspan="7" class="px-4 py-8 text-center text-slate-500">
-                                    <i class="fa-regular fa-folder-open text-3xl mb-2 opacity-50"></i><br>
-                                    No hay registros todavía. Agrega empleados usando el formulario.
-                                </td>
-                            </tr>
+                            <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">Cargando base de datos...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+
     </div>
 
     <!-- Contenedor para Notificaciones Toast -->
     <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
 
-    <script>
-        // Array para almacenar los registros en memoria
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        // 1. CONFIGURACIÓN FIREBASE
+        // ==========================================
+        let firebaseConfig;
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+        } else {
+            // PEGA TU CONFIGURACIÓN DE FIREBASE AQUÍ PARA GITHUB PAGES
+            firebaseConfig = {
+                apiKey: "TU_API_KEY",
+                authDomain: "tu-proyecto.firebaseapp.com",
+                projectId: "tu-proyecto",
+                storageBucket: "tu-proyecto.appspot.com",
+                messagingSenderId: "123456789",
+                appId: "1:123456789:web:abcdef"
+            };
+        }
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'inimmed-asistencia';
+
         let registros = [];
+        let currentUser = null;
+        let estadoActualEmpleado = null; // Guarda qué le toca hacer al empleado seleccionado
 
-        // Inicializar la fecha de hoy por defecto y cargar logo
+        // ==========================================
+        // 2. INICIALIZACIÓN Y NAVEGACIÓN
+        // ==========================================
+        
+        // Reloj en tiempo real para el Kiosko
+        setInterval(() => {
+            const ahora = new Date();
+            document.getElementById('relojActual').textContent = ahora.toLocaleTimeString('es-MX', { hour12: false });
+        }, 1000);
+
         document.addEventListener('DOMContentLoaded', () => {
-            const hoy = new Date().toISOString().split('T')[0];
-            document.getElementById('fecha').value = hoy;
+            const hoy = new Date();
+            const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('fechaActual').textContent = hoy.toLocaleDateString('es-MX', opciones).toUpperCase();
+            
+            // Establecer filtro de admin en la fecha de hoy
+            const strHoy = hoy.toISOString().split('T')[0];
+            document.getElementById('filtroFecha').value = strHoy;
 
-            // Revisar si ya hay un logo guardado en la memoria del navegador
-            const logoGuardado = localStorage.getItem('logoEmpresaBase64');
-            if(logoGuardado) {
-                document.getElementById('logoEmpresa').src = logoGuardado;
+            // Revisar si venimos escaneando un QR especial
+            const urlParams = new URLSearchParams(window.location.search);
+            if(urlParams.get('modo') === 'checador') {
+                cambiarVista('kiosko');
+            }
+
+            // Restaurar el departamento si el usuario ya lo había seleccionado en su celular antes
+            const deptoGuardado = localStorage.getItem('kioskoDepto');
+            if(deptoGuardado) {
+                const deptoSelect = document.getElementById('kioskoDepartamento');
+                if(deptoSelect) deptoSelect.value = deptoGuardado;
             }
         });
 
-        // Función para cambiar y guardar el logo
-        function cambiarLogo(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const base64Image = e.target.result;
-                    document.getElementById('logoEmpresa').src = base64Image;
-                    
-                    // Guardar en localStorage para que no se borre al recargar la página
-                    localStorage.setItem('logoEmpresaBase64', base64Image);
-                    mostrarToast('Logo actualizado correctamente.');
-                };
-                reader.readAsDataURL(file);
+        // Función para recordar el departamento
+        window.guardarDepartamento = function() {
+            const depto = document.getElementById('kioskoDepartamento').value;
+            localStorage.setItem('kioskoDepto', depto);
+        };
+
+        window.cambiarVista = function(vista) {
+            const btnKiosko = document.getElementById('btnTabKiosko');
+            const btnAdmin = document.getElementById('btnTabAdmin');
+            const divKiosko = document.getElementById('vistaKiosko');
+            const divAdmin = document.getElementById('vistaAdmin');
+
+            if(vista === 'kiosko') {
+                btnKiosko.className = 'px-3 py-4 text-sm md:text-base transition-colors tab-active';
+                btnAdmin.className = 'px-3 py-4 text-sm md:text-base transition-colors tab-inactive';
+                divKiosko.classList.remove('hidden');
+                divKiosko.classList.add('block');
+                divAdmin.classList.add('hidden');
+                divAdmin.classList.remove('block');
+            } else {
+                btnAdmin.className = 'px-3 py-4 text-sm md:text-base transition-colors tab-active';
+                btnKiosko.className = 'px-3 py-4 text-sm md:text-base transition-colors tab-inactive';
+                divAdmin.classList.remove('hidden');
+                divAdmin.classList.add('block');
+                divKiosko.classList.add('hidden');
+                divKiosko.classList.remove('block');
+                window.actualizarTabla(); // Forzar renderizado
             }
+        };
+
+        // ==========================================
+        // 3. BASE DE DATOS Y SINCRONIZACIÓN
+        // ==========================================
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Error Auth:", error);
+                window.mostrarToast("Error conectando a la nube", "error");
+            }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                iniciarEscuchaRegistros();
+            }
+        });
+        initAuth();
+
+        function iniciarEscuchaRegistros() {
+            if (!currentUser) return;
+            const registrosRef = collection(db, 'artifacts', appId, 'public', 'data', 'asistencias_v2');
+            
+            onSnapshot(registrosRef, (snapshot) => {
+                registros = [];
+                snapshot.forEach((doc) => {
+                    registros.push({ id: doc.id, ...doc.data() });
+                });
+                
+                window.actualizarTabla();
+                if(document.getElementById('vistaKiosko').classList.contains('block')) {
+                    window.evaluarEstadoEmpleado(); // Actualizar botones si alguien tiene el cel abierto
+                }
+            }, (error) => {
+                console.error(error);
+            });
         }
 
-        // Función para mostrar notificaciones estilo "Toast"
-        function mostrarToast(mensaje, tipo = 'success') {
-            const toast = document.createElement('div');
-            
-            // Estilos basados en el tipo de mensaje
-            let colorClases = tipo === 'success' 
-                ? 'bg-green-100 border-green-500 text-green-800' 
-                : 'bg-red-100 border-red-500 text-red-800';
-            
-            let icono = tipo === 'success' 
-                ? '<i class="fa-solid fa-check-circle text-green-600 mr-2"></i>' 
-                : '<i class="fa-solid fa-triangle-exclamation text-red-600 mr-2"></i>';
+        // ==========================================
+        // 4. LÓGICA DEL KIOSKO (MÁQUINA DE ESTADOS)
+        // ==========================================
+        window.evaluarEstadoEmpleado = function() {
+            const empleadoId = document.getElementById('kioskoEmpleado').value;
+            const zonaAccion = document.getElementById('zonaAccion');
+            const estadoMensaje = document.getElementById('estadoMensaje');
+            const btnAccion = document.getElementById('btnRegistrarAccion');
+            const textoAccion = document.getElementById('textoAccion');
+            const iconoAccion = document.getElementById('iconoAccion');
 
-            toast.className = `flex items-center p-4 mb-2 border-l-4 rounded shadow-md transition-opacity duration-300 ${colorClases}`;
-            toast.innerHTML = `${icono} <span class="font-medium">${mensaje}</span>`;
-            
-            const container = document.getElementById('toastContainer');
-            container.appendChild(toast);
-
-            // Desaparecer después de 3 segundos
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => container.removeChild(toast), 300);
-            }, 3000);
-        }
-
-        // Función para agregar un registro desde el formulario
-        function agregarRegistro(event) {
-            event.preventDefault(); // Evitar que la página se recargue
-
-            // Obtener valores
-            const fecha = document.getElementById('fecha').value;
-            const departamento = document.getElementById('departamento').value || 'N/A';
-            const nombre = document.getElementById('nombre').value;
-            const horaEntrada = document.getElementById('horaEntrada').value;
-            const horaInicioComida = document.getElementById('horaInicioComida').value || '--:--';
-            const horaTerminoComida = document.getElementById('horaTerminoComida').value || '--:--';
-            const horaSalida = document.getElementById('horaSalida').value || '--:--';
-            const observaciones = document.getElementById('observaciones').value || '';
-
-            // Crear objeto de registro
-            const nuevoRegistro = {
-                id: Date.now(), // ID único basado en el tiempo
-                fecha,
-                departamento,
-                nombre,
-                horaEntrada,
-                horaInicioComida,
-                horaTerminoComida,
-                horaSalida,
-                observaciones
-            };
-
-            // Agregar al array
-            registros.push(nuevoRegistro);
-
-            // Actualizar la interfaz
-            actualizarTabla();
-            
-            // Limpiar solo los campos específicos del empleado (mantener fecha y departamento)
-            document.getElementById('nombre').value = '';
-            document.getElementById('horaEntrada').value = '';
-            document.getElementById('horaInicioComida').value = '';
-            document.getElementById('horaTerminoComida').value = '';
-            document.getElementById('horaSalida').value = '';
-            document.getElementById('observaciones').value = '';
-            
-            // Regresar el foco al nombre para captura rápida
-            document.getElementById('nombre').focus();
-
-            mostrarToast('Empleado agregado a la lista.');
-        }
-
-        // Función para eliminar un registro específico
-        function eliminarRegistro(id) {
-            registros = registros.filter(r => r.id !== id);
-            actualizarTabla();
-            mostrarToast('Registro eliminado.', 'error');
-        }
-
-        // Función para pintar la tabla con los datos actuales
-        function actualizarTabla() {
-            const tbody = document.getElementById('tablaRegistros');
-            const contador = document.getElementById('contadorRegistros');
-            
-            // Limpiar tabla actual
-            tbody.innerHTML = '';
-            
-            // Actualizar contador
-            contador.textContent = `${registros.length} empleado${registros.length !== 1 ? 's' : ''}`;
-
-            if (registros.length === 0) {
-                // Mostrar mensaje de vacío
-                tbody.innerHTML = `
-                    <tr id="filaVacia">
-                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">
-                            <i class="fa-regular fa-folder-open text-3xl mb-2 opacity-50"></i><br>
-                            No hay registros todavía. Agrega empleados usando el formulario.
-                        </td>
-                    </tr>
-                `;
+            if(!empleadoId) {
+                zonaAccion.classList.add('hidden');
                 return;
             }
 
-            // Generar filas
-            registros.forEach((registro) => {
+            zonaAccion.classList.remove('hidden');
+            
+            // Buscar si ya hay un registro de ESTE empleado HOY
+            const hoyStr = new Date().toISOString().split('T')[0];
+            
+            // Filtramos en la memoria los registros para no usar queries complejas en Firebase (Regla 2)
+            const registroHoy = registros.find(r => r.nombre === empleadoId && r.fecha === hoyStr);
+
+            if (!registroHoy) {
+                // ESTADO 1: No ha llegado
+                estadoActualEmpleado = { accion: 'entrada', idDoc: null };
+                estadoMensaje.innerHTML = `<span class="font-bold">¡Hola ${empleadoId.split(' ')[0]}!</span> Aún no tienes registro de entrada hoy.`;
+                btnAccion.className = 'w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700';
+                textoAccion.textContent = 'Registrar Entrada';
+                iconoAccion.className = 'fa-solid fa-right-to-bracket';
+            } 
+            else if (registroHoy.horaEntrada && !registroHoy.horaInicioComida) {
+                // ESTADO 2: Ya entró, sigue Salir a Comer
+                estadoActualEmpleado = { accion: 'inicio_comida', idDoc: registroHoy.id };
+                estadoMensaje.innerHTML = `Entraste hoy a las <strong>${registroHoy.horaEntrada}</strong>.`;
+                btnAccion.className = 'w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-600';
+                textoAccion.textContent = 'Salida a Comer';
+                iconoAccion.className = 'fa-solid fa-utensils';
+            }
+            else if (registroHoy.horaInicioComida && !registroHoy.horaTerminoComida) {
+                // ESTADO 3: Está comiendo, sigue Regresar de Comer
+                estadoActualEmpleado = { accion: 'fin_comida', idDoc: registroHoy.id };
+                estadoMensaje.innerHTML = `Saliste a comer a las <strong>${registroHoy.horaInicioComida}</strong>.`;
+                btnAccion.className = 'w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-600';
+                textoAccion.textContent = 'Regreso de Comida';
+                iconoAccion.className = 'fa-solid fa-arrow-rotate-left';
+            }
+            else if (registroHoy.horaTerminoComida && !registroHoy.horaSalida) {
+                // ESTADO 4: Ya regresó de comer, sigue Salida del día
+                estadoActualEmpleado = { accion: 'salida', idDoc: registroHoy.id };
+                estadoMensaje.innerHTML = `Regresaste de comer a las <strong>${registroHoy.horaTerminoComida}</strong>.`;
+                btnAccion.className = 'w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700';
+                textoAccion.textContent = 'Registrar Salida';
+                iconoAccion.className = 'fa-solid fa-right-from-bracket';
+            }
+            else {
+                // ESTADO 5: Jornada terminada
+                estadoActualEmpleado = { accion: 'terminado', idDoc: registroHoy.id };
+                estadoMensaje.innerHTML = `✅ <strong>Jornada completada.</strong> Saliste a las ${registroHoy.horaSalida}. ¡Buen descanso!`;
+                btnAccion.className = 'w-full py-4 px-6 rounded-xl text-slate-400 font-bold text-lg bg-slate-200 cursor-not-allowed flex items-center justify-center gap-3';
+                textoAccion.textContent = 'Registro Completo';
+                iconoAccion.className = 'fa-solid fa-check-double';
+                btnAccion.disabled = true;
+            }
+        };
+
+        window.ejecutarAccion = async function() {
+            if (!currentUser || !estadoActualEmpleado) return;
+            
+            const btnAccion = document.getElementById('btnRegistrarAccion');
+            if(btnAccion.disabled) return;
+            
+            btnAccion.disabled = true;
+            btnAccion.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+
+            const nombre = document.getElementById('kioskoEmpleado').value;
+            const departamento = document.getElementById('kioskoDepartamento').value || "General";
+            const ahora = new Date();
+            const hoyStr = ahora.toISOString().split('T')[0];
+            const horaStr = ahora.toLocaleTimeString('es-MX', { hour12: false, hour: '2-digit', minute:'2-digit' });
+
+            try {
+                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'asistencias_v2');
+
+                if (estadoActualEmpleado.accion === 'entrada') {
+                    // Crear nuevo documento
+                    await addDoc(colRef, {
+                        fecha: hoyStr,
+                        nombre: nombre,
+                        departamento: departamento,
+                        horaEntrada: horaStr,
+                        horaInicioComida: "",
+                        horaTerminoComida: "",
+                        horaSalida: "",
+                        timestampCreacion: Date.now()
+                    });
+                    window.mostrarToast(`Entrada registrada: ${horaStr}`);
+                } 
+                else {
+                    // Actualizar documento existente
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'asistencias_v2', estadoActualEmpleado.idDoc);
+                    const updateData = {};
+                    
+                    if (estadoActualEmpleado.accion === 'inicio_comida') updateData.horaInicioComida = horaStr;
+                    if (estadoActualEmpleado.accion === 'fin_comida') updateData.horaTerminoComida = horaStr;
+                    if (estadoActualEmpleado.accion === 'salida') updateData.horaSalida = horaStr;
+
+                    await updateDoc(docRef, updateData);
+                    window.mostrarToast(`Hora guardada: ${horaStr}`);
+                }
+
+                // Resetear UI
+                document.getElementById('kioskoEmpleado').value = "";
+                document.getElementById('zonaAccion').classList.add('hidden');
+
+            } catch (error) {
+                console.error("Error guardando datos:", error);
+                window.mostrarToast('Hubo un error de conexión', 'error');
+            } finally {
+                btnAccion.disabled = false;
+            }
+        };
+
+        // ==========================================
+        // 5. FUNCIONES DEL ADMINISTRADOR
+        // ==========================================
+        window.actualizarTabla = function() {
+            const tbody = document.getElementById('tablaRegistros');
+            const filtroFecha = document.getElementById('filtroFecha').value;
+            
+            tbody.innerHTML = '';
+            
+            // Filtrar registros por la fecha seleccionada en el admin
+            const registrosFiltrados = registros
+                .filter(r => r.fecha === filtroFecha)
+                .sort((a, b) => b.timestampCreacion - a.timestampCreacion); // Ordenar más recientes arriba
+
+            if (registrosFiltrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">No hay registros para este día.</td></tr>`;
+                return;
+            }
+
+            registrosFiltrados.forEach((r) => {
                 const tr = document.createElement('tr');
-                tr.className = 'border-b border-slate-100 hover:bg-slate-50 transition-colors';
+                tr.className = 'border-b border-slate-100 hover:bg-slate-50';
                 
                 tr.innerHTML = `
-                    <td class="px-4 py-3 font-medium text-slate-800">${registro.nombre}</td>
-                    <td class="px-4 py-3 text-green-600 font-semibold">${registro.horaEntrada}</td>
-                    <td class="px-4 py-3 text-orange-500">${registro.horaInicioComida}</td>
-                    <td class="px-4 py-3 text-orange-500">${registro.horaTerminoComida}</td>
-                    <td class="px-4 py-3 text-slate-500">${registro.horaSalida}</td>
-                    <td class="px-4 py-3 text-slate-500 italic text-xs">${registro.observaciones}</td>
+                    <td class="px-4 py-3 font-medium text-slate-800">
+                        ${r.nombre}
+                        <div class="text-xs text-slate-400 font-normal mt-0.5"><i class="fa-solid fa-building"></i> ${r.departamento || 'General'}</div>
+                    </td>
+                    <td class="px-4 py-3 text-green-600 font-semibold">${r.horaEntrada || '--:--'}</td>
+                    <td class="px-4 py-3 text-orange-500">${r.horaInicioComida || '--:--'}</td>
+                    <td class="px-4 py-3 text-orange-500">${r.horaTerminoComida || '--:--'}</td>
+                    <td class="px-4 py-3 text-red-600 font-semibold">${r.horaSalida || '--:--'}</td>
                     <td class="px-4 py-3 text-center">
-                        <button onclick="eliminarRegistro(${registro.id})" class="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded transition-colors" title="Eliminar registro">
+                        <button onclick="eliminarRegistro('${r.id}')" class="text-slate-400 hover:text-red-600 transition-colors" title="Eliminar">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
-        }
+        };
 
-        // Función para generar y descargar el archivo CSV
-        function exportarCSV() {
-            if (registros.length === 0) {
-                mostrarToast('No hay datos para exportar.', 'error');
+        window.eliminarRegistro = async function(id) {
+            if (!currentUser) return;
+            if(!confirm("¿Estás seguro de eliminar este registro completo?")) return;
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'asistencias_v2', id));
+                window.mostrarToast('Registro eliminado.', 'error');
+            } catch (error) {
+                window.mostrarToast('Error al eliminar', 'error');
+            }
+        };
+
+        window.exportarCSV = function() {
+            const filtroFecha = document.getElementById('filtroFecha').value;
+            const registrosExportar = registros.filter(r => r.fecha === filtroFecha);
+
+            if (registrosExportar.length === 0) {
+                window.mostrarToast('No hay datos en esta fecha para exportar.', 'error');
                 return;
             }
 
-            // 1. Crear los encabezados del CSV
-            const encabezados = ['Fecha', 'Departamento', 'Nombre del Empleado', 'Hora Entrada', 'Inicio Comida', 'Término Comida', 'Hora Salida', 'Observaciones'];
-            
-            // 2. Formatear las filas
-            // Nota: Envolvemos los textos en comillas dobles para evitar que las comas en los nombres u observaciones rompan el CSV
-            const filas = registros.map(r => {
-                return [
-                    r.fecha,
-                    `"${r.departamento}"`,
-                    `"${r.nombre}"`,
-                    r.horaEntrada,
-                    r.horaInicioComida,
-                    r.horaTerminoComida,
-                    r.horaSalida,
-                    `"${r.observaciones.replace(/"/g, '""')}"` // Escapar comillas dobles internas
-                ].join(',');
-            });
+            const encabezados = ['Fecha', 'Departamento', 'Nombre del Empleado', 'Hora Entrada', 'Inicio Comida', 'Término Comida', 'Hora Salida'];
+            const filas = registrosExportar.map(r => [
+                r.fecha, `"${r.departamento || 'General'}"`, `"${r.nombre}"`, r.horaEntrada, r.horaInicioComida, r.horaTerminoComida, r.horaSalida
+            ].join(','));
 
-            // 3. Unir todo con saltos de línea (\n)
-            // Añadimos el BOM (Byte Order Mark) de UTF-8 para que Excel lea bien los acentos
             const contenidoCSV = '\uFEFF' + [encabezados.join(','), ...filas].join('\n');
-
-            // 4. Crear un Blob (objeto de archivo binario en el navegador)
             const blob = new Blob([contenidoCSV], { type: 'text/csv;charset=utf-8;' });
-            
-            // 5. Crear un enlace de descarga invisible y hacer clic en él
-            const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
-            
-            // Generar nombre de archivo basado en la fecha actual
-            const fechaDocumento = document.getElementById('fecha').value || new Date().toISOString().split('T')[0];
-            const nombreArchivo = `Asistencia_${fechaDocumento}.csv`;
-
-            link.setAttribute('href', url);
-            link.setAttribute('download', nombreArchivo);
-            link.style.visibility = 'hidden';
-            
+            link.href = URL.createObjectURL(blob);
+            link.download = `Asistencia_INIMMED_${filtroFecha}.csv`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        };
 
-            mostrarToast('Archivo CSV descargado con éxito.');
-        }
+        // Utilidades UI
+        window.mostrarToast = function(mensaje, tipo = 'success') {
+            const toast = document.createElement('div');
+            let bg = tipo === 'success' ? 'bg-slate-800 border-l-4 border-green-500 text-white' : 'bg-red-100 border-l-4 border-red-500 text-red-800';
+            toast.className = `flex items-center p-4 mb-2 rounded shadow-xl transition-opacity duration-300 ${bg}`;
+            toast.innerHTML = `<span class="font-medium">${mensaje}</span>`;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+        };
     </script>
 </body>
 </html>
