@@ -50,15 +50,23 @@
         </div>
     </nav>
 
+    <!-- Alerta de Configuración (Desaparece cuando pones tu URL) -->
+    <div id="alertaConfiguracion" class="bg-red-500 text-white text-center py-2 text-sm font-medium hidden">
+        ⚠️ Debes colocar tu enlace de Google Apps Script en el código (SCRIPT_URL) para que funcione.
+    </div>
+
     <!-- Contenedor Principal -->
     <div class="max-w-6xl mx-auto mt-6 px-4">
 
         <!-- ==========================================
-             VISTA 1: KIOSKO / CHECADOR (Para Empleados)
+             VISTA 1: KIOSKO / CHECADOR
              ========================================== -->
         <div id="vistaKiosko" class="block max-w-md mx-auto">
             <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-                <div class="bg-slate-50 p-6 text-center border-b border-slate-200">
+                <div class="bg-slate-50 p-6 text-center border-b border-slate-200 relative">
+                    <button onclick="cargarRegistros()" class="absolute top-4 right-4 text-slate-400 hover:text-primary transition-colors" title="Actualizar datos">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
                     <h2 class="text-2xl font-bold text-slate-800">Registro de Asistencia</h2>
                     <p class="text-slate-500 text-sm mt-1">Selecciona tu nombre para registrar tu horario actual.</p>
                     <div id="relojActual" class="text-3xl font-mono font-bold text-primary mt-4 tracking-wider">--:--:--</div>
@@ -116,18 +124,23 @@
         </div>
 
         <!-- ==========================================
-             VISTA 2: ADMINISTRADOR (Tabla y CSV)
+             VISTA 2: ADMINISTRADOR
              ========================================== -->
         <div id="vistaAdmin" class="hidden">
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900"><i class="fa-solid fa-clipboard-user text-primary mr-2"></i> Panel de Control</h1>
-                    <p class="text-sm text-slate-500 mt-1">Visualiza los registros sincronizados en tiempo real por los empleados.</p>
+                    <p class="text-sm text-slate-500 mt-1">Sincronizado con Google Sheets.</p>
                 </div>
                 <div class="flex gap-3">
-                    <button onclick="exportarCSV()" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition duration-200 flex items-center gap-2">
-                        <i class="fa-solid fa-file-csv"></i> Exportar a CSV
+                    <button onclick="cargarRegistros()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-2 px-4 rounded-lg shadow-sm transition duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-rotate"></i> Actualizar
                     </button>
+                    <!-- El botón de exportar CSV se quita porque ahora lo abres directo en Google Sheets, 
+                         pero se deja un botón para abrir el Sheets si quieres -->
+                    <a href="#" target="_blank" id="btnAbrirSheets" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-file-excel"></i> Ver en Google Sheets
+                    </a>
                 </div>
             </div>
 
@@ -151,7 +164,7 @@
                             </tr>
                         </thead>
                         <tbody id="tablaRegistros">
-                            <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">Cargando base de datos...</td></tr>
+                            <tr><td colspan="6" class="px-4 py-8 text-center text-slate-500"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Conectando con Google Sheets...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -160,78 +173,61 @@
 
     </div>
 
-    <!-- Contenedor para Notificaciones Toast -->
+    <!-- Contenedor para Notificaciones -->
     <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // ==========================================
-        // 1. CONFIGURACIÓN FIREBASE
-        // ==========================================
-        let firebaseConfig;
-        if (typeof __firebase_config !== 'undefined') {
-            firebaseConfig = JSON.parse(__firebase_config);
-        } else {
-            // PEGA TU CONFIGURACIÓN DE FIREBASE AQUÍ PARA GITHUB PAGES
-            firebaseConfig = {
-                apiKey: "TU_API_KEY",
-                authDomain: "tu-proyecto.firebaseapp.com",
-                projectId: "tu-proyecto",
-                storageBucket: "tu-proyecto.appspot.com",
-                messagingSenderId: "123456789",
-                appId: "1:123456789:web:abcdef"
-            };
-        }
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'inimmed-asistencia';
-
-        let registros = [];
-        let currentUser = null;
-        let estadoActualEmpleado = null; // Guarda qué le toca hacer al empleado seleccionado
-
-        // ==========================================
-        // 2. INICIALIZACIÓN Y NAVEGACIÓN
-        // ==========================================
+    <script>
+        // =========================================================================
+        // 1. CONFIGURACIÓN DE LA API DE GOOGLE SHEETS
+        // Pega aquí el enlace que te dará Google Apps Script (Termina en /exec)
+        // =========================================================================
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUOZKwyRwg3T5eu8LifQfIKE7UXWmrnyBZjcbqWdwjjeG1P_gvBzpgnjih8Yn5sq4LMA/exec"; 
         
-        // Reloj en tiempo real para el Kiosko
+        let registros = [];
+        let estadoActualEmpleado = null;
+
+        // Reloj en tiempo real
         setInterval(() => {
             const ahora = new Date();
             document.getElementById('relojActual').textContent = ahora.toLocaleTimeString('es-MX', { hour12: false });
         }, 1000);
 
         document.addEventListener('DOMContentLoaded', () => {
+            if(SCRIPT_URL === "TU_ENLACE_DE_APPS_SCRIPT_AQUI" || SCRIPT_URL === "") {
+                document.getElementById('alertaConfiguracion').classList.remove('hidden');
+            }
+
             const hoy = new Date();
             const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('fechaActual').textContent = hoy.toLocaleDateString('es-MX', opciones).toUpperCase();
             
-            // Establecer filtro de admin en la fecha de hoy
             const strHoy = hoy.toISOString().split('T')[0];
             document.getElementById('filtroFecha').value = strHoy;
 
-            // Revisar si venimos escaneando un QR especial
             const urlParams = new URLSearchParams(window.location.search);
             if(urlParams.get('modo') === 'checador') {
                 cambiarVista('kiosko');
             }
 
-            // Restaurar el departamento si el usuario ya lo había seleccionado en su celular antes
             const deptoGuardado = localStorage.getItem('kioskoDepto');
             if(deptoGuardado) {
                 const deptoSelect = document.getElementById('kioskoDepartamento');
                 if(deptoSelect) deptoSelect.value = deptoGuardado;
             }
+
+            // Cargar datos al iniciar
+            cargarRegistros();
+            
+            // Actualizar tabla cada 30 segundos automáticamente si estamos en modo Admin
+            setInterval(() => {
+                if(document.getElementById('vistaAdmin').classList.contains('block')) {
+                    cargarRegistros();
+                }
+            }, 30000);
         });
 
-        // Función para recordar el departamento
         window.guardarDepartamento = function() {
-            const depto = document.getElementById('kioskoDepartamento').value;
-            localStorage.setItem('kioskoDepto', depto);
+            localStorage.setItem('kioskoDepto', document.getElementById('kioskoDepartamento').value);
         };
 
         window.cambiarVista = function(vista) {
@@ -254,55 +250,122 @@
                 divAdmin.classList.add('block');
                 divKiosko.classList.add('hidden');
                 divKiosko.classList.remove('block');
-                window.actualizarTabla(); // Forzar renderizado
+                cargarRegistros(); // Refrescar al entrar a admin
             }
         };
 
         // ==========================================
-        // 3. BASE DE DATOS Y SINCRONIZACIÓN
+        // 2. COMUNICACIÓN CON GOOGLE SHEETS (FETCH)
         // ==========================================
-        const initAuth = async () => {
+        async function cargarRegistros() {
+            if(SCRIPT_URL.includes("TU_ENLACE")) return;
+
             try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                console.error("Error Auth:", error);
-                window.mostrarToast("Error conectando a la nube", "error");
-            }
-        };
-
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            if (user) {
-                iniciarEscuchaRegistros();
-            }
-        });
-        initAuth();
-
-        function iniciarEscuchaRegistros() {
-            if (!currentUser) return;
-            const registrosRef = collection(db, 'artifacts', appId, 'public', 'data', 'asistencias_v2');
-            
-            onSnapshot(registrosRef, (snapshot) => {
-                registros = [];
-                snapshot.forEach((doc) => {
-                    registros.push({ id: doc.id, ...doc.data() });
-                });
+                // Hacemos una petición GET a la URL del Script
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                
+                // Formateamos los datos que vienen del excel
+                registros = data.map(fila => ({
+                    fecha: fila.Fecha,
+                    departamento: fila.Departamento,
+                    nombre: fila.Nombre,
+                    horaEntrada: fila.Entrada,
+                    horaInicioComida: fila.InicioComida,
+                    horaTerminoComida: fila.TerminoComida,
+                    horaSalida: fila.Salida
+                }));
                 
                 window.actualizarTabla();
                 if(document.getElementById('vistaKiosko').classList.contains('block')) {
-                    window.evaluarEstadoEmpleado(); // Actualizar botones si alguien tiene el cel abierto
+                    window.evaluarEstadoEmpleado();
                 }
-            }, (error) => {
-                console.error(error);
-            });
+            } catch (error) {
+                console.error("Error al cargar Google Sheets:", error);
+                window.mostrarToast("Error conectando con el servidor", "error");
+            }
         }
 
+        window.ejecutarAccion = async function() {
+            if(!estadoActualEmpleado) return;
+            if(SCRIPT_URL.includes("TU_ENLACE")) {
+                window.mostrarToast("Configura primero el enlace de la API", "error");
+                return;
+            }
+            
+            const btnAccion = document.getElementById('btnRegistrarAccion');
+            btnAccion.disabled = true;
+            btnAccion.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+
+            const nombre = document.getElementById('kioskoEmpleado').value;
+            const departamento = document.getElementById('kioskoDepartamento').value || "General";
+            const ahora = new Date();
+            const hoyStr = ahora.toISOString().split('T')[0];
+            const horaStr = ahora.toLocaleTimeString('es-MX', { hour12: false, hour: '2-digit', minute:'2-digit' });
+
+            // Crear el paquete de datos para enviar a Google Sheets
+            const payload = {
+                accion: estadoActualEmpleado.accion, // entrada, inicio_comida, fin_comida, salida
+                fecha: hoyStr,
+                nombre: nombre,
+                departamento: departamento,
+                hora: horaStr
+            };
+
+            try {
+                // Enviar datos usando POST
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                
+                if(result.status === 'success') {
+                    window.mostrarToast(`Registro exitoso: ${horaStr}`);
+                    
+                    // Resetear la vista
+                    document.getElementById('kioskoEmpleado').value = "";
+                    document.getElementById('zonaAccion').classList.add('hidden');
+                    
+                    // Recargar datos para tener la info actualizada
+                    await cargarRegistros();
+                } else {
+                    throw new Error("El script devolvió error");
+                }
+
+            } catch (error) {
+                console.error("Error guardando datos:", error);
+                window.mostrarToast('Hubo un error de conexión', 'error');
+            } finally {
+                btnAccion.disabled = false;
+            }
+        };
+
+        window.eliminarRegistro = async function(fecha, nombre) {
+            if(!confirm("¿Estás seguro de eliminar este registro del Excel?")) return;
+            
+            try {
+                const payload = { accion: 'eliminar', fecha: fecha, nombre: nombre };
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                
+                if(result.status === 'success') {
+                    window.mostrarToast('Registro eliminado.');
+                    cargarRegistros();
+                }
+            } catch (error) {
+                window.mostrarToast('Error al eliminar', 'error');
+            }
+        };
+
         // ==========================================
-        // 4. LÓGICA DEL KIOSKO (MÁQUINA DE ESTADOS)
+        // 3. LÓGICA DE INTERFAZ (MÁQUINA DE ESTADOS)
         // ==========================================
         window.evaluarEstadoEmpleado = function() {
             const empleadoId = document.getElementById('kioskoEmpleado').value;
@@ -318,48 +381,39 @@
             }
 
             zonaAccion.classList.remove('hidden');
-            
-            // Buscar si ya hay un registro de ESTE empleado HOY
             const hoyStr = new Date().toISOString().split('T')[0];
-            
-            // Filtramos en la memoria los registros para no usar queries complejas en Firebase (Regla 2)
             const registroHoy = registros.find(r => r.nombre === empleadoId && r.fecha === hoyStr);
 
             if (!registroHoy) {
-                // ESTADO 1: No ha llegado
-                estadoActualEmpleado = { accion: 'entrada', idDoc: null };
+                estadoActualEmpleado = { accion: 'entrada' };
                 estadoMensaje.innerHTML = `<span class="font-bold">¡Hola ${empleadoId.split(' ')[0]}!</span> Aún no tienes registro de entrada hoy.`;
                 btnAccion.className = 'w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700';
                 textoAccion.textContent = 'Registrar Entrada';
                 iconoAccion.className = 'fa-solid fa-right-to-bracket';
             } 
             else if (registroHoy.horaEntrada && !registroHoy.horaInicioComida) {
-                // ESTADO 2: Ya entró, sigue Salir a Comer
-                estadoActualEmpleado = { accion: 'inicio_comida', idDoc: registroHoy.id };
+                estadoActualEmpleado = { accion: 'inicio_comida' };
                 estadoMensaje.innerHTML = `Entraste hoy a las <strong>${registroHoy.horaEntrada}</strong>.`;
                 btnAccion.className = 'w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-600';
                 textoAccion.textContent = 'Salida a Comer';
                 iconoAccion.className = 'fa-solid fa-utensils';
             }
             else if (registroHoy.horaInicioComida && !registroHoy.horaTerminoComida) {
-                // ESTADO 3: Está comiendo, sigue Regresar de Comer
-                estadoActualEmpleado = { accion: 'fin_comida', idDoc: registroHoy.id };
+                estadoActualEmpleado = { accion: 'fin_comida' };
                 estadoMensaje.innerHTML = `Saliste a comer a las <strong>${registroHoy.horaInicioComida}</strong>.`;
                 btnAccion.className = 'w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-600';
                 textoAccion.textContent = 'Regreso de Comida';
                 iconoAccion.className = 'fa-solid fa-arrow-rotate-left';
             }
             else if (registroHoy.horaTerminoComida && !registroHoy.horaSalida) {
-                // ESTADO 4: Ya regresó de comer, sigue Salida del día
-                estadoActualEmpleado = { accion: 'salida', idDoc: registroHoy.id };
+                estadoActualEmpleado = { accion: 'salida' };
                 estadoMensaje.innerHTML = `Regresaste de comer a las <strong>${registroHoy.horaTerminoComida}</strong>.`;
                 btnAccion.className = 'w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700';
                 textoAccion.textContent = 'Registrar Salida';
                 iconoAccion.className = 'fa-solid fa-right-from-bracket';
             }
             else {
-                // ESTADO 5: Jornada terminada
-                estadoActualEmpleado = { accion: 'terminado', idDoc: registroHoy.id };
+                estadoActualEmpleado = { accion: 'terminado' };
                 estadoMensaje.innerHTML = `✅ <strong>Jornada completada.</strong> Saliste a las ${registroHoy.horaSalida}. ¡Buen descanso!`;
                 btnAccion.className = 'w-full py-4 px-6 rounded-xl text-slate-400 font-bold text-lg bg-slate-200 cursor-not-allowed flex items-center justify-center gap-3';
                 textoAccion.textContent = 'Registro Completo';
@@ -368,76 +422,13 @@
             }
         };
 
-        window.ejecutarAccion = async function() {
-            if (!currentUser || !estadoActualEmpleado) return;
-            
-            const btnAccion = document.getElementById('btnRegistrarAccion');
-            if(btnAccion.disabled) return;
-            
-            btnAccion.disabled = true;
-            btnAccion.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
-
-            const nombre = document.getElementById('kioskoEmpleado').value;
-            const departamento = document.getElementById('kioskoDepartamento').value || "General";
-            const ahora = new Date();
-            const hoyStr = ahora.toISOString().split('T')[0];
-            const horaStr = ahora.toLocaleTimeString('es-MX', { hour12: false, hour: '2-digit', minute:'2-digit' });
-
-            try {
-                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'asistencias_v2');
-
-                if (estadoActualEmpleado.accion === 'entrada') {
-                    // Crear nuevo documento
-                    await addDoc(colRef, {
-                        fecha: hoyStr,
-                        nombre: nombre,
-                        departamento: departamento,
-                        horaEntrada: horaStr,
-                        horaInicioComida: "",
-                        horaTerminoComida: "",
-                        horaSalida: "",
-                        timestampCreacion: Date.now()
-                    });
-                    window.mostrarToast(`Entrada registrada: ${horaStr}`);
-                } 
-                else {
-                    // Actualizar documento existente
-                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'asistencias_v2', estadoActualEmpleado.idDoc);
-                    const updateData = {};
-                    
-                    if (estadoActualEmpleado.accion === 'inicio_comida') updateData.horaInicioComida = horaStr;
-                    if (estadoActualEmpleado.accion === 'fin_comida') updateData.horaTerminoComida = horaStr;
-                    if (estadoActualEmpleado.accion === 'salida') updateData.horaSalida = horaStr;
-
-                    await updateDoc(docRef, updateData);
-                    window.mostrarToast(`Hora guardada: ${horaStr}`);
-                }
-
-                // Resetear UI
-                document.getElementById('kioskoEmpleado').value = "";
-                document.getElementById('zonaAccion').classList.add('hidden');
-
-            } catch (error) {
-                console.error("Error guardando datos:", error);
-                window.mostrarToast('Hubo un error de conexión', 'error');
-            } finally {
-                btnAccion.disabled = false;
-            }
-        };
-
-        // ==========================================
-        // 5. FUNCIONES DEL ADMINISTRADOR
-        // ==========================================
         window.actualizarTabla = function() {
             const tbody = document.getElementById('tablaRegistros');
             const filtroFecha = document.getElementById('filtroFecha').value;
             
             tbody.innerHTML = '';
             
-            // Filtrar registros por la fecha seleccionada en el admin
-            const registrosFiltrados = registros
-                .filter(r => r.fecha === filtroFecha)
-                .sort((a, b) => b.timestampCreacion - a.timestampCreacion); // Ordenar más recientes arriba
+            const registrosFiltrados = registros.filter(r => r.fecha === filtroFecha);
 
             if (registrosFiltrados.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">No hay registros para este día.</td></tr>`;
@@ -458,7 +449,7 @@
                     <td class="px-4 py-3 text-orange-500">${r.horaTerminoComida || '--:--'}</td>
                     <td class="px-4 py-3 text-red-600 font-semibold">${r.horaSalida || '--:--'}</td>
                     <td class="px-4 py-3 text-center">
-                        <button onclick="eliminarRegistro('${r.id}')" class="text-slate-400 hover:text-red-600 transition-colors" title="Eliminar">
+                        <button onclick="eliminarRegistro('${r.fecha}', '${r.nombre}')" class="text-slate-400 hover:text-red-600 transition-colors" title="Eliminar del Excel">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </td>
@@ -467,42 +458,6 @@
             });
         };
 
-        window.eliminarRegistro = async function(id) {
-            if (!currentUser) return;
-            if(!confirm("¿Estás seguro de eliminar este registro completo?")) return;
-            try {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'asistencias_v2', id));
-                window.mostrarToast('Registro eliminado.', 'error');
-            } catch (error) {
-                window.mostrarToast('Error al eliminar', 'error');
-            }
-        };
-
-        window.exportarCSV = function() {
-            const filtroFecha = document.getElementById('filtroFecha').value;
-            const registrosExportar = registros.filter(r => r.fecha === filtroFecha);
-
-            if (registrosExportar.length === 0) {
-                window.mostrarToast('No hay datos en esta fecha para exportar.', 'error');
-                return;
-            }
-
-            const encabezados = ['Fecha', 'Departamento', 'Nombre del Empleado', 'Hora Entrada', 'Inicio Comida', 'Término Comida', 'Hora Salida'];
-            const filas = registrosExportar.map(r => [
-                r.fecha, `"${r.departamento || 'General'}"`, `"${r.nombre}"`, r.horaEntrada, r.horaInicioComida, r.horaTerminoComida, r.horaSalida
-            ].join(','));
-
-            const contenidoCSV = '\uFEFF' + [encabezados.join(','), ...filas].join('\n');
-            const blob = new Blob([contenidoCSV], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `Asistencia_INIMMED_${filtroFecha}.csv`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        };
-
-        // Utilidades UI
         window.mostrarToast = function(mensaje, tipo = 'success') {
             const toast = document.createElement('div');
             let bg = tipo === 'success' ? 'bg-slate-800 border-l-4 border-green-500 text-white' : 'bg-red-100 border-l-4 border-red-500 text-red-800';
