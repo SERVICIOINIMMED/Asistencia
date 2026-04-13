@@ -30,7 +30,7 @@
 </head>
 <body class="min-h-screen pb-12">
 
-    <!-- Navegación Superior (Ahora tiene un ID para poder ocultarla) -->
+    <!-- Navegación Superior -->
     <nav id="navbarPrincipal" class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-10">
         <div class="max-w-6xl mx-auto px-4">
             <div class="flex justify-between items-center h-16">
@@ -50,7 +50,7 @@
         </div>
     </nav>
 
-    <!-- Alerta de Configuración (Desaparece cuando pones tu URL) -->
+    <!-- Alerta de Configuración -->
     <div id="alertaConfiguracion" class="bg-red-500 text-white text-center py-2 text-sm font-medium hidden">
         ⚠️ Debes colocar tu enlace de Google Apps Script en el código (SCRIPT_URL) para que funcione.
     </div>
@@ -180,16 +180,15 @@
         // =========================================================================
         
         // Pega aquí el enlace que te dará Google Apps Script
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby2MZB7zLytKXSFuEJ_tSfoOsVTNbvAETR-kQuXigxNS6fg7wsAT-wB3ItVjFE5VMjcXw/exec"; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5PlinVGbVd01uUuwFyb0YhoKIWvO5z3gn7RoubOAWy0KRO8XT10PysCA-5M7fQ-LFsQ/exec"; 
         
         // Cambia tu contraseña de administrador aquí:
         const PASSWORD_ADMIN = "1234";
         
         let registros = [];
         let estadoActualEmpleado = null;
-        let esAdminVerificado = false; // Controla si ya metiste la contraseña
+        let esAdminVerificado = false; 
 
-        // Reloj en tiempo real
         setInterval(() => {
             const ahora = new Date();
             document.getElementById('relojActual').textContent = ahora.toLocaleTimeString('es-MX', { hour12: false });
@@ -207,13 +206,11 @@
             const strHoy = hoy.toISOString().split('T')[0];
             document.getElementById('filtroFecha').value = strHoy;
 
-            // ESTO CONTROLA LA VISTA DEL QR
             const urlParams = new URLSearchParams(window.location.search);
             if(urlParams.get('modo') === 'checador') {
                 cambiarVista('kiosko');
-                // Ocultar el menú superior para que los empleados no puedan ver el botón Admin
                 document.getElementById('navbarPrincipal').style.display = 'none';
-                document.getElementById('mensajeQR').style.display = 'none'; // También oculta el mensajito del QR
+                document.getElementById('mensajeQR').style.display = 'none'; 
             }
 
             const deptoGuardado = localStorage.getItem('kioskoDepto');
@@ -222,7 +219,6 @@
                 if(deptoSelect) deptoSelect.value = deptoGuardado;
             }
 
-            // Cargar datos al iniciar
             cargarRegistros();
             
             setInterval(() => {
@@ -237,14 +233,13 @@
         };
 
         window.cambiarVista = function(vista) {
-            // MEDIDA DE SEGURIDAD PARA EL ADMINISTRADOR
             if(vista === 'admin' && !esAdminVerificado) {
                 const passwordIngresada = prompt("Acceso restringido.\nPor favor ingresa la contraseña de administrador:");
                 if(passwordIngresada !== PASSWORD_ADMIN) {
                     alert("Contraseña incorrecta.");
-                    return; // Detiene la función y no cambia de pantalla
+                    return; 
                 }
-                esAdminVerificado = true; // Guarda que ya la pusiste para no volver a pedirla
+                esAdminVerificado = true; 
             }
 
             const btnKiosko = document.getElementById('btnTabKiosko');
@@ -279,6 +274,11 @@
                 const response = await fetch(SCRIPT_URL);
                 const data = await response.json();
                 
+                if (data.status === "error") {
+                    console.error("Error desde el servidor:", data.message);
+                    return;
+                }
+
                 registros = data.map(fila => ({
                     fecha: fila.Fecha,
                     departamento: fila.Departamento,
@@ -315,20 +315,21 @@
             const hoyStr = ahora.toISOString().split('T')[0];
             const horaStr = ahora.toLocaleTimeString('es-MX', { hour12: false, hour: '2-digit', minute:'2-digit' });
 
-            // Construir la URL con los parámetros para método GET
-            const urlParams = new URLSearchParams({
+            const payload = {
                 accion: estadoActualEmpleado.accion,
                 fecha: hoyStr,
                 nombre: nombre,
                 departamento: departamento,
                 hora: horaStr
-            });
-
-            const urlFinal = `${SCRIPT_URL}?${urlParams.toString()}`;
+            };
 
             try {
-                // Usamos fetch con método GET (por defecto) y enviamos los datos en la URL
-                const response = await fetch(urlFinal);
+                // Envío directo POST (evita bloqueos de navegadores)
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                
                 const result = await response.json();
                 
                 if(result.status === 'success') {
@@ -337,10 +338,11 @@
                     document.getElementById('zonaAccion').classList.add('hidden');
                     await cargarRegistros();
                 } else {
-                    throw new Error("El script devolvió error");
+                    console.error("Error del servidor:", result.message);
+                    window.mostrarToast(`Error: ${result.message}`, 'error');
                 }
             } catch (error) {
-                console.error("Error guardando datos:", error);
+                console.error("Error de conexión profunda:", error);
                 window.mostrarToast('Hubo un error de conexión, intenta de nuevo', 'error');
             } finally {
                 btnAccion.disabled = false;
@@ -349,18 +351,12 @@
 
         window.eliminarRegistro = async function(fecha, nombre) {
             if(!confirm("¿Estás seguro de eliminar este registro del Excel?")) return;
-            
-            // Construir la URL con los parámetros para método GET
-            const urlParams = new URLSearchParams({
-                accion: 'eliminar',
-                fecha: fecha,
-                nombre: nombre
-            });
-
-            const urlFinal = `${SCRIPT_URL}?${urlParams.toString()}`;
-
             try {
-                const response = await fetch(urlFinal);
+                const payload = { accion: 'eliminar', fecha: fecha, nombre: nombre };
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
                 const result = await response.json();
                 
                 if(result.status === 'success') {
