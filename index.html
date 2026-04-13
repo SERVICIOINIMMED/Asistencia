@@ -315,20 +315,20 @@
             const hoyStr = ahora.toISOString().split('T')[0];
             const horaStr = ahora.toLocaleTimeString('es-MX', { hour12: false, hour: '2-digit', minute:'2-digit' });
 
-            const payload = {
+            // Construir la URL con los parámetros para método GET
+            const urlParams = new URLSearchParams({
                 accion: estadoActualEmpleado.accion,
                 fecha: hoyStr,
                 nombre: nombre,
                 departamento: departamento,
                 hora: horaStr
-            };
+            });
+
+            const urlFinal = `${SCRIPT_URL}?${urlParams.toString()}`;
 
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload)
-                });
+                // Usamos fetch con método GET (por defecto) y enviamos los datos en la URL
+                const response = await fetch(urlFinal);
                 const result = await response.json();
                 
                 if(result.status === 'success') {
@@ -349,13 +349,18 @@
 
         window.eliminarRegistro = async function(fecha, nombre) {
             if(!confirm("¿Estás seguro de eliminar este registro del Excel?")) return;
+            
+            // Construir la URL con los parámetros para método GET
+            const urlParams = new URLSearchParams({
+                accion: 'eliminar',
+                fecha: fecha,
+                nombre: nombre
+            });
+
+            const urlFinal = `${SCRIPT_URL}?${urlParams.toString()}`;
+
             try {
-                const payload = { accion: 'eliminar', fecha: fecha, nombre: nombre };
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload)
-                });
+                const response = await fetch(urlFinal);
                 const result = await response.json();
                 
                 if(result.status === 'success') {
