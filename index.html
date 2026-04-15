@@ -94,14 +94,15 @@
                                 <option value="Francisco Xavier Quintana Ortega">Francisco Xavier Quintana Ortega</option>
                                 <option value="Lic. Jennifer Gabriela Santos Javier">Lic. Jennifer Gabriela Santos Javier</option>
                                 <option value="Ing. Israel Pastelín Morales">Ing. Israel Pastelín Morales</option>
-                                <option value="Ing. José Salazar Gasperino">Ing. José Salazar Gasperino</option>
+                                <option value="Ing. José Salazar Gaspariano">Ing. José Salazar Gasperino</option>
                                 <option value="Ing. Erick Jair García González">Ing. Erick Jair García González</option>
                                 <option value="Ing. Dagoberto de Jesús Guevara Díaz">Ing. Dagoberto de Jesús Guevara Díaz</option>
                                 <option value="L.C. Maribel Lozano Lázaro">L.C. Maribel Lozano Lázaro</option>
                                 <option value="Alan Blanco Aviléz">Alan Blanco Aviléz</option>
                                 <option value="Pedro Guillermo Jota Laime">Pedro Guillermo Jota Laime</option>
                                 <option value="Ing. Juan Pablo Lares Larragoitia">Ing. Juan Pablo Lares Larragoitia</option>
-                                <option value="Cristian Barragán Hernández">Cristian Barragán Hernández</option>
+                                <option value="Cristian Barragán Hernández">Cristian Barragán Cruz</option>
+                                <option value="Ing. José Angel Blanco Aviles">Ing. José Angel Blanco Aviles</option>
                             </select>
                         </div>
                     </div>
@@ -137,7 +138,7 @@
                     <button onclick="cargarRegistros()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-2 px-4 rounded-lg shadow-sm transition duration-200 flex items-center gap-2">
                         <i class="fa-solid fa-rotate"></i> Actualizar
                     </button>
-                    <a href="https://docs.google.com/spreadsheets/d/1VbmjtK1wdnqEnu3pSJ0ZVm9-CbUdHWVbS7K5XaGp5gE/edit?gid=0#gid=0" target="_blank" id="btnAbrirSheets" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition duration-200 flex items-center gap-2">
+                    <a href="#" target="_blank" id="btnAbrirSheets" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition duration-200 flex items-center gap-2">
                         <i class="fa-solid fa-file-excel"></i> Ver en Google Sheets
                     </a>
                 </div>
@@ -176,24 +177,32 @@
     <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
 
     <script>
+        
+        
         // =========================================================================
         // 1. CONFIGURACIÓN DE LA API Y SEGURIDAD
         // =========================================================================
-        
+
         // Pega aquí el NUEVO enlace que te dará Google Apps Script
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQ-Vobsl9Bcl-PBPw76qohK0XLRKuFgsm6fRhOTagjJToUxBi2oDkx_HpEWKdmeKZE1g/exec"; 
-        
+        // Pega aquí el enlace directo a tu documento de Google Sheets
+        const SHEETS_URL = "https://docs.google.com/spreadsheets/d/1VbmjtK1wdnqEnu3pSJ0ZVm9-CbUdHWVbS7K5XaGp5gE/edit?gid=0#gid=0"; 
+
         // Cambia tu contraseña de administrador aquí:
         const PASSWORD_ADMIN = "15229";
-        
+
         let registros = [];
         let estadoActualEmpleado = null;
         let esAdminVerificado = false; 
 
-        setInterval(() => {
-            const ahora = new Date();
-            document.getElementById('relojActual').textContent = ahora.toLocaleTimeString('es-MX', { hour12: false });
-        }, 1000);
+        // Nueva función para obtener la fecha local exacta y evitar el salto de día a las 7 PM
+        function obtenerFechaLocal() {
+            const hoy = new Date();
+            const anio = hoy.getFullYear();
+            const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+            const dia = String(hoy.getDate()).padStart(2, '0');
+        return `${anio}-${mes}-${dia}`;
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             if(SCRIPT_URL === "TU_ENLACE_DE_APPS_SCRIPT_AQUI" || SCRIPT_URL === "") {
@@ -204,8 +213,15 @@
             const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('fechaActual').textContent = hoy.toLocaleDateString('es-MX', opciones).toUpperCase();
             
-            const strHoy = hoy.toISOString().split('T')[0];
+            const strHoy = obtenerFechaLocal();
             document.getElementById('filtroFecha').value = strHoy;
+
+            // Añade estas líneas justo debajo para que el botón de Sheets funcione:
+            if (SHEETS_URL && SHEETS_URL !== "TU_ENLACE_DE_SHEETS_AQUI") {
+                document.getElementById('btnAbrirSheets').href = SHEETS_URL;
+            } else {
+                document.getElementById('btnAbrirSheets').onclick = () => alert("Falta configurar el enlace de Google Sheets en el código.");
+            }
 
             const urlParams = new URLSearchParams(window.location.search);
             if(urlParams.get('modo') === 'checador') {
