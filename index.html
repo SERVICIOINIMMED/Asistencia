@@ -30,7 +30,6 @@
 </head>
 <body class="min-h-screen pb-12">
 
-    <!-- Navegación Superior -->
     <nav id="navbarPrincipal" class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-10">
         <div class="max-w-6xl mx-auto px-4">
             <div class="flex justify-between items-center h-16">
@@ -50,17 +49,12 @@
         </div>
     </nav>
 
-    <!-- Alerta de Configuración -->
     <div id="alertaConfiguracion" class="bg-red-500 text-white text-center py-2 text-sm font-medium hidden">
         ⚠️ Debes colocar tu enlace de Google Apps Script en el código (SCRIPT_URL) para que funcione.
     </div>
 
-    <!-- Contenedor Principal -->
     <div class="max-w-6xl mx-auto mt-6 px-4">
 
-        <!-- ==========================================
-             VISTA 1: KIOSKO / CHECADOR
-             ========================================== -->
         <div id="vistaKiosko" class="block max-w-md mx-auto">
             <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
                 <div class="bg-slate-50 p-6 text-center border-b border-slate-200 relative">
@@ -75,7 +69,6 @@
 
                 <div class="p-6">
                     <div class="space-y-5">
-                        <!-- Selector de Departamento -->
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-2">Área / Departamento</label>
                             <select id="kioskoDepartamento" onchange="guardarDepartamento()" class="w-full border-2 border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white text-lg font-medium text-slate-800 transition-colors">
@@ -86,7 +79,6 @@
                             </select>
                         </div>
 
-                        <!-- Selector de Nombre -->
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-2">¿Quién eres?</label>
                             <select id="kioskoEmpleado" onchange="evaluarEstadoEmpleado()" class="w-full border-2 border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white text-lg font-medium text-slate-800 transition-colors">
@@ -94,7 +86,7 @@
                                 <option value="Francisco Xavier Quintana Ortega">Francisco Xavier Quintana Ortega</option>
                                 <option value="Lic. Jennifer Gabriela Santos Javier">Lic. Jennifer Gabriela Santos Javier</option>
                                 <option value="Ing. Israel Pastelín Morales">Ing. Israel Pastelín Morales</option>
-                                <option value="Ing. José Salazar Gaspariano">Ing. José Salazar Gasperino</option>
+                                <option value="Ing. José Salazar Gasperino">Ing. José Salazar Gasperino</option>
                                 <option value="Ing. Erick Jair García González">Ing. Erick Jair García González</option>
                                 <option value="Ing. Dagoberto de Jesús Guevara Díaz">Ing. Dagoberto de Jesús Guevara Díaz</option>
                                 <option value="L.C. Maribel Lozano Lázaro">L.C. Maribel Lozano Lázaro</option>
@@ -107,7 +99,6 @@
                         </div>
                     </div>
 
-                    <!-- Zona Dinámica de Acciones -->
                     <div id="zonaAccion" class="mt-8 hidden text-center">
                         <div id="estadoMensaje" class="text-slate-600 mb-4 bg-slate-50 p-3 rounded-lg border border-slate-100 text-sm">
                             Tu estado actual aparecerá aquí.
@@ -125,9 +116,6 @@
             </div>
         </div>
 
-        <!-- ==========================================
-             VISTA 2: ADMINISTRADOR
-             ========================================== -->
         <div id="vistaAdmin" class="hidden">
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
@@ -144,7 +132,6 @@
                 </div>
             </div>
 
-            <!-- Filtros Admin -->
             <div class="bg-white p-4 rounded-t-xl border border-b-0 border-slate-200 flex items-center gap-4">
                 <label class="font-medium text-sm text-slate-700">Ver registros del día:</label>
                 <input type="date" id="filtroFecha" onchange="window.actualizarTabla()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
@@ -173,12 +160,9 @@
 
     </div>
 
-    <!-- Contenedor para Notificaciones -->
     <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
 
     <script>
-        
-        
         // =========================================================================
         // 1. CONFIGURACIÓN DE LA API Y SEGURIDAD
         // =========================================================================
@@ -195,16 +179,34 @@
         let estadoActualEmpleado = null;
         let esAdminVerificado = false; 
 
+        // Función para el reloj anti-congelamiento
+        function actualizarReloj() {
+            const ahora = new Date();
+            const elementoReloj = document.getElementById('relojActual');
+            if(elementoReloj) {
+                elementoReloj.textContent = ahora.toLocaleTimeString('es-MX', { hour12: false });
+            }
+        }
+        setInterval(actualizarReloj, 1000);
+
+        document.addEventListener("visibilitychange", () => {
+            if (!document.hidden) {
+                actualizarReloj();
+            }
+        });
+
         // Nueva función para obtener la fecha local exacta y evitar el salto de día a las 7 PM
         function obtenerFechaLocal() {
             const hoy = new Date();
             const anio = hoy.getFullYear();
             const mes = String(hoy.getMonth() + 1).padStart(2, '0');
             const dia = String(hoy.getDate()).padStart(2, '0');
-        return `${anio}-${mes}-${dia}`;
+            return `${anio}-${mes}-${dia}`;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            actualizarReloj(); // Actualiza el reloj inmediatamente al cargar
+
             if(SCRIPT_URL === "TU_ENLACE_DE_APPS_SCRIPT_AQUI" || SCRIPT_URL === "") {
                 document.getElementById('alertaConfiguracion').classList.remove('hidden');
             }
@@ -296,7 +298,7 @@
         // 2. COMUNICACIÓN CON GOOGLE SHEETS
         // ==========================================
         async function cargarRegistros() {
-            if(SCRIPT_URL.includes("TU_ENLACE")) return;
+            if(SCRIPT_URL.includes("TU_ENLACE") || SCRIPT_URL === "") return;
             try {
                 const response = await fetch(SCRIPT_URL);
                 const data = await response.json();
@@ -307,7 +309,7 @@
                 }
 
                 registros = data.map(fila => ({
-                    fecha: normalizarFechaExcel(fila.Fecha), // Nos aseguramos del formato
+                    fecha: normalizarFechaExcel(fila.Fecha), 
                     departamento: fila.Departamento,
                     nombre: fila.Nombre,
                     horaEntrada: fila.Entrada,
@@ -327,7 +329,7 @@
 
         window.ejecutarAccion = async function() {
             if(!estadoActualEmpleado) return;
-            if(SCRIPT_URL.includes("TU_ENLACE")) {
+            if(SCRIPT_URL.includes("TU_ENLACE") || SCRIPT_URL === "") {
                 window.mostrarToast("Configura primero el enlace de la API", "error");
                 return;
             }
@@ -339,163 +341,5 @@
             const nombre = document.getElementById('kioskoEmpleado').value;
             const departamento = document.getElementById('kioskoDepartamento').value || "General";
             const ahora = new Date();
-            const hoyStr = ahora.toISOString().split('T')[0]; // Siempre formato 2026-04-13
-            const horaStr = ahora.toLocaleTimeString('es-MX', { hour12: false, hour: '2-digit', minute:'2-digit' });
-
-            const payload = {
-                accion: estadoActualEmpleado.accion,
-                fecha: hoyStr,
-                nombre: nombre,
-                departamento: departamento,
-                hora: horaStr
-            };
-
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                
-                const result = await response.json();
-                
-                if(result.status === 'success') {
-                    window.mostrarToast(`Registro exitoso: ${horaStr}`);
-                    document.getElementById('kioskoEmpleado').value = "";
-                    document.getElementById('zonaAccion').classList.add('hidden');
-                    await cargarRegistros(); // Refresca los datos para mostrar el siguiente botón correcto
-                } else {
-                    console.error("Error del servidor:", result.message);
-                    window.mostrarToast(`Error: ${result.message}`, 'error');
-                }
-            } catch (error) {
-                console.error("Error de conexión:", error);
-                window.mostrarToast('Hubo un error de conexión, intenta de nuevo', 'error');
-            } finally {
-                btnAccion.disabled = false;
-            }
-        };
-
-        window.eliminarRegistro = async function(fecha, nombre) {
-            if(!confirm("¿Estás seguro de eliminar este registro del Excel?")) return;
-            try {
-                const payload = { accion: 'eliminar', fecha: fecha, nombre: nombre };
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                const result = await response.json();
-                
-                if(result.status === 'success') {
-                    window.mostrarToast('Registro eliminado.');
-                    cargarRegistros();
-                }
-            } catch (error) {
-                window.mostrarToast('Error al eliminar', 'error');
-            }
-        };
-
-        // ==========================================
-        // 3. LÓGICA DE INTERFAZ (BOTONES INTELIGENTES)
-        // ==========================================
-        window.evaluarEstadoEmpleado = function() {
-            const empleadoId = document.getElementById('kioskoEmpleado').value;
-            const zonaAccion = document.getElementById('zonaAccion');
-            const estadoMensaje = document.getElementById('estadoMensaje');
-            const btnAccion = document.getElementById('btnRegistrarAccion');
-            const textoAccion = document.getElementById('textoAccion');
-            const iconoAccion = document.getElementById('iconoAccion');
-
-            if(!empleadoId) {
-                zonaAccion.classList.add('hidden');
-                return;
-            }
-
-            zonaAccion.classList.remove('hidden');
-            const hoyStr = new Date().toISOString().split('T')[0];
             
-            // Busca si ya hay un registro de ESTE empleado en ESTA fecha
-            const registroHoy = registros.find(r => r.nombre === empleadoId && r.fecha === hoyStr);
-
-            if (!registroHoy) {
-                estadoActualEmpleado = { accion: 'entrada' };
-                estadoMensaje.innerHTML = `<span class="font-bold">¡Hola ${empleadoId.split(' ')[0]}!</span> Aún no tienes registro de entrada hoy.`;
-                btnAccion.className = 'w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700';
-                textoAccion.textContent = 'Registrar Entrada';
-                iconoAccion.className = 'fa-solid fa-right-to-bracket';
-            } 
-            else if (registroHoy.horaEntrada && !registroHoy.horaInicioComida) {
-                estadoActualEmpleado = { accion: 'inicio_comida' };
-                estadoMensaje.innerHTML = `Entraste hoy a las <strong>${registroHoy.horaEntrada}</strong>.`;
-                btnAccion.className = 'w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-600';
-                textoAccion.textContent = 'Salida a Comer';
-                iconoAccion.className = 'fa-solid fa-utensils';
-            }
-            else if (registroHoy.horaInicioComida && !registroHoy.horaTerminoComida) {
-                estadoActualEmpleado = { accion: 'fin_comida' };
-                estadoMensaje.innerHTML = `Saliste a comer a las <strong>${registroHoy.horaInicioComida}</strong>.`;
-                btnAccion.className = 'w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-600';
-                textoAccion.textContent = 'Regreso de Comida';
-                iconoAccion.className = 'fa-solid fa-arrow-rotate-left';
-            }
-            else if (registroHoy.horaTerminoComida && !registroHoy.horaSalida) {
-                estadoActualEmpleado = { accion: 'salida' };
-                estadoMensaje.innerHTML = `Regresaste de comer a las <strong>${registroHoy.horaTerminoComida}</strong>.`;
-                btnAccion.className = 'w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700';
-                textoAccion.textContent = 'Registrar Salida';
-                iconoAccion.className = 'fa-solid fa-right-from-bracket';
-            }
-            else {
-                estadoActualEmpleado = { accion: 'terminado' };
-                estadoMensaje.innerHTML = `✅ <strong>Jornada completada.</strong> Saliste a las ${registroHoy.horaSalida}. ¡Buen descanso!`;
-                btnAccion.className = 'w-full py-4 px-6 rounded-xl text-slate-400 font-bold text-lg bg-slate-200 cursor-not-allowed flex items-center justify-center gap-3';
-                textoAccion.textContent = 'Registro Completo';
-                iconoAccion.className = 'fa-solid fa-check-double';
-                btnAccion.disabled = true;
-            }
-        };
-
-        window.actualizarTabla = function() {
-            const tbody = document.getElementById('tablaRegistros');
-            const filtroFecha = document.getElementById('filtroFecha').value;
-            tbody.innerHTML = '';
-            
-            const registrosFiltrados = registros.filter(r => r.fecha === filtroFecha);
-
-            if (registrosFiltrados.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">No hay registros para este día.</td></tr>`;
-                return;
-            }
-
-            registrosFiltrados.forEach((r) => {
-                const tr = document.createElement('tr');
-                tr.className = 'border-b border-slate-100 hover:bg-slate-50';
-                tr.innerHTML = `
-                    <td class="px-4 py-3 font-medium text-slate-800">
-                        ${r.nombre}
-                        <div class="text-xs text-slate-400 font-normal mt-0.5"><i class="fa-solid fa-building"></i> ${r.departamento || 'General'}</div>
-                    </td>
-                    <td class="px-4 py-3 text-green-600 font-semibold">${r.horaEntrada || '--:--'}</td>
-                    <td class="px-4 py-3 text-orange-500">${r.horaInicioComida || '--:--'}</td>
-                    <td class="px-4 py-3 text-orange-500">${r.horaTerminoComida || '--:--'}</td>
-                    <td class="px-4 py-3 text-red-600 font-semibold">${r.horaSalida || '--:--'}</td>
-                    <td class="px-4 py-3 text-center">
-                        <button onclick="eliminarRegistro('${r.fecha}', '${r.nombre}')" class="text-slate-400 hover:text-red-600 transition-colors" title="Eliminar del Excel">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        };
-
-        window.mostrarToast = function(mensaje, tipo = 'success') {
-            const toast = document.createElement('div');
-            let bg = tipo === 'success' ? 'bg-slate-800 border-l-4 border-green-500 text-white' : 'bg-red-100 border-l-4 border-red-500 text-red-800';
-            toast.className = `flex items-center p-4 mb-2 rounded shadow-xl transition-opacity duration-300 ${bg}`;
-            toast.innerHTML = `<span class="font-medium">${mensaje}</span>`;
-            document.getElementById('toastContainer').appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
-        };
-    </script>
-</body>
-</html>
+            // CORRE
