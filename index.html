@@ -168,9 +168,9 @@
         // =========================================================================
 
         // Pega aquí el NUEVO enlace que te dará Google Apps Script
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzJh9sNeOEj5zhrLJxkMgFbxbl8qFnzCAHzWiLTJT_hwRRax8TkkHWt1EfYTZ3y-bEmQA/exec"; 
+        const SCRIPT_URL = ""; 
         // Pega aquí el enlace directo a tu documento de Google Sheets
-        const SHEETS_URL = "https://docs.google.com/spreadsheets/d/1VbmjtK1wdnqEnu3pSJ0ZVm9-CbUdHWVbS7K5XaGp5gE/edit?gid=0#gid=0"; 
+        const SHEETS_URL = ""; 
 
         // Cambia tu contraseña de administrador aquí:
         const PASSWORD_ADMIN = "15229";
@@ -342,4 +342,166 @@
             const departamento = document.getElementById('kioskoDepartamento').value || "General";
             const ahora = new Date();
             
-            // CORRE
+            // CORRECCIÓN: Usamos obtenerFechaLocal() en lugar de toISOString()
+            const hoyStr = obtenerFechaLocal(); 
+            const horaStr = ahora.toLocaleTimeString('es-MX', { hour12: false, hour: '2-digit', minute:'2-digit' });
+
+            const payload = {
+                accion: estadoActualEmpleado.accion,
+                fecha: hoyStr,
+                nombre: nombre,
+                departamento: departamento,
+                hora: horaStr
+            };
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                
+                if(result.status === 'success') {
+                    window.mostrarToast(`Registro exitoso: ${horaStr}`);
+                    document.getElementById('kioskoEmpleado').value = "";
+                    document.getElementById('zonaAccion').classList.add('hidden');
+                    await cargarRegistros(); // Refresca los datos para mostrar el siguiente botón correcto
+                } else {
+                    console.error("Error del servidor:", result.message);
+                    window.mostrarToast(`Error: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                console.error("Error de conexión:", error);
+                window.mostrarToast('Hubo un error de conexión, intenta de nuevo', 'error');
+            } finally {
+                btnAccion.disabled = false;
+            }
+        };
+
+        window.eliminarRegistro = async function(fecha, nombre) {
+            if(!confirm("¿Estás seguro de eliminar este registro del Excel?")) return;
+            try {
+                const payload = { accion: 'eliminar', fecha: fecha, nombre: nombre };
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                
+                if(result.status === 'success') {
+                    window.mostrarToast('Registro eliminado.');
+                    cargarRegistros();
+                }
+            } catch (error) {
+                window.mostrarToast('Error al eliminar', 'error');
+            }
+        };
+
+        // ==========================================
+        // 3. LÓGICA DE INTERFAZ (BOTONES INTELIGENTES)
+        // ==========================================
+        window.evaluarEstadoEmpleado = function() {
+            const empleadoId = document.getElementById('kioskoEmpleado').value;
+            const zonaAccion = document.getElementById('zonaAccion');
+            const estadoMensaje = document.getElementById('estadoMensaje');
+            const btnAccion = document.getElementById('btnRegistrarAccion');
+            const textoAccion = document.getElementById('textoAccion');
+            const iconoAccion = document.getElementById('iconoAccion');
+
+            if(!empleadoId) {
+                zonaAccion.classList.add('hidden');
+                return;
+            }
+
+            zonaAccion.classList.remove('hidden');
+            
+            // CORRECCIÓN: Usamos obtenerFechaLocal() en lugar de toISOString()
+            const hoyStr = obtenerFechaLocal(); 
+            
+            // Busca si ya hay un registro de ESTE empleado en ESTA fecha
+            const registroHoy = registros.find(r => r.nombre === empleadoId && r.fecha === hoyStr);
+
+            if (!registroHoy) {
+                estadoActualEmpleado = { accion: 'entrada' };
+                estadoMensaje.innerHTML = `<span class="font-bold">¡Hola ${empleadoId.split(' ')[0]}!</span> Aún no tienes registro de entrada hoy.`;
+                btnAccion.className = 'w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700';
+                textoAccion.textContent = 'Registrar Entrada';
+                iconoAccion.className = 'fa-solid fa-right-to-bracket';
+            } 
+            else if (registroHoy.horaEntrada && !registroHoy.horaInicioComida) {
+                estadoActualEmpleado = { accion: 'inicio_comida' };
+                estadoMensaje.innerHTML = `Entraste hoy a las <strong>${registroHoy.horaEntrada}</strong>.`;
+                btnAccion.className = 'w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-600';
+                textoAccion.textContent = 'Salida a Comer';
+                iconoAccion.className = 'fa-solid fa-utensils';
+            }
+            else if (registroHoy.horaInicioComida && !registroHoy.horaTerminoComida) {
+                estadoActualEmpleado = { accion: 'fin_comida' };
+                estadoMensaje.innerHTML = `Saliste a comer a las <strong>${registroHoy.horaInicioComida}</strong>.`;
+                btnAccion.className = 'w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-3 bg-orange-500 hover:bg-orange-600';
+                textoAccion.textContent = 'Regreso de Comida';
+                iconoAccion.className = 'fa-solid fa-arrow-rotate-left';
+            }
+            else if (registroHoy.horaTerminoComida && !registroHoy.horaSalida) {
+                estadoActualEmpleado = { accion: 'salida' };
+                estadoMensaje.innerHTML = `Regresaste de comer a las <strong>${registroHoy.horaTerminoComida}</strong>.`;
+                btnAccion.className = 'w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700';
+                textoAccion.textContent = 'Registrar Salida';
+                iconoAccion.className = 'fa-solid fa-right-from-bracket';
+            }
+            else {
+                estadoActualEmpleado = { accion: 'terminado' };
+                estadoMensaje.innerHTML = `✅ <strong>Jornada completada.</strong> Saliste a las ${registroHoy.horaSalida}. ¡Buen descanso!`;
+                btnAccion.className = 'w-full py-4 px-6 rounded-xl text-slate-400 font-bold text-lg bg-slate-200 cursor-not-allowed flex items-center justify-center gap-3';
+                textoAccion.textContent = 'Registro Completo';
+                iconoAccion.className = 'fa-solid fa-check-double';
+                btnAccion.disabled = true;
+            }
+        };
+
+        window.actualizarTabla = function() {
+            const tbody = document.getElementById('tablaRegistros');
+            const filtroFecha = document.getElementById('filtroFecha').value;
+            tbody.innerHTML = '';
+            
+            const registrosFiltrados = registros.filter(r => r.fecha === filtroFecha);
+
+            if (registrosFiltrados.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">No hay registros para este día.</td></tr>`;
+                return;
+            }
+
+            registrosFiltrados.forEach((r) => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-100 hover:bg-slate-50';
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-medium text-slate-800">
+                        ${r.nombre}
+                        <div class="text-xs text-slate-400 font-normal mt-0.5"><i class="fa-solid fa-building"></i> ${r.departamento || 'General'}</div>
+                    </td>
+                    <td class="px-4 py-3 text-green-600 font-semibold">${r.horaEntrada || '--:--'}</td>
+                    <td class="px-4 py-3 text-orange-500">${r.horaInicioComida || '--:--'}</td>
+                    <td class="px-4 py-3 text-orange-500">${r.horaTerminoComida || '--:--'}</td>
+                    <td class="px-4 py-3 text-red-600 font-semibold">${r.horaSalida || '--:--'}</td>
+                    <td class="px-4 py-3 text-center">
+                        <button onclick="eliminarRegistro('${r.fecha}', '${r.nombre}')" class="text-slate-400 hover:text-red-600 transition-colors" title="Eliminar del Excel">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        window.mostrarToast = function(mensaje, tipo = 'success') {
+            const toast = document.createElement('div');
+            let bg = tipo === 'success' ? 'bg-slate-800 border-l-4 border-green-500 text-white' : 'bg-red-100 border-l-4 border-red-500 text-red-800';
+            toast.className = `flex items-center p-4 mb-2 rounded shadow-xl transition-opacity duration-300 ${bg}`;
+            toast.innerHTML = `<span class="font-medium">${mensaje}</span>`;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+        };
+    </script>
+</body>
+</html>
