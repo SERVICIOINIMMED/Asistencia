@@ -38,10 +38,10 @@
                     <span class="font-bold text-xl text-slate-800 tracking-tight">INIMMED</span>
                 </div>
                 <div class="flex space-x-1 md:space-x-4">
-                    <button id="btnTabKiosko" onclick="cambiarVista('kiosko')" class="px-3 py-4 text-sm md:text-base transition-colors tab-active">
+                    <button id="btnTabKiosko" onclick="window.cambiarVista('kiosko')" class="px-3 py-4 text-sm md:text-base transition-colors tab-active">
                         <i class="fa-solid fa-mobile-screen-button mr-1"></i> <span class="hidden sm:inline">Modo</span> Checador
                     </button>
-                    <button id="btnTabAdmin" onclick="cambiarVista('admin')" class="px-3 py-4 text-sm md:text-base transition-colors tab-inactive">
+                    <button id="btnTabAdmin" onclick="window.cambiarVista('admin')" class="px-3 py-4 text-sm md:text-base transition-colors tab-inactive">
                         <i class="fa-solid fa-user-tie mr-1"></i> Admin<span class="hidden sm:inline">istración</span>
                     </button>
                 </div>
@@ -58,7 +58,7 @@
         <div id="vistaKiosko" class="block max-w-md mx-auto">
             <div class="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
                 <div class="bg-slate-50 p-6 text-center border-b border-slate-200 relative">
-                    <button onclick="cargarRegistros()" class="absolute top-4 right-4 text-slate-400 hover:text-primary transition-colors" title="Actualizar datos">
+                    <button onclick="window.cargarRegistros()" class="absolute top-4 right-4 text-slate-400 hover:text-primary transition-colors" title="Actualizar datos">
                         <i class="fa-solid fa-rotate-right"></i>
                     </button>
                     <h2 class="text-2xl font-bold text-slate-800">Registro de Asistencia</h2>
@@ -71,7 +71,7 @@
                     <div class="space-y-5">
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-2">Área / Departamento</label>
-                            <select id="kioskoDepartamento" onchange="guardarDepartamento()" class="w-full border-2 border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white text-lg font-medium text-slate-800 transition-colors">
+                            <select id="kioskoDepartamento" onchange="window.guardarDepartamento()" class="w-full border-2 border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white text-lg font-medium text-slate-800 transition-colors">
                                 <option value="" disabled selected>Selecciona tu área...</option>
                                 <option value="Administración">Administración</option>
                                 <option value="Servicio">Servicio</option>
@@ -81,12 +81,12 @@
 
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-2">¿Quién eres?</label>
-                            <select id="kioskoEmpleado" onchange="evaluarEstadoEmpleado()" class="w-full border-2 border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white text-lg font-medium text-slate-800 transition-colors">
+                            <select id="kioskoEmpleado" onchange="window.evaluarEstadoEmpleado()" class="w-full border-2 border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white text-lg font-medium text-slate-800 transition-colors">
                                 <option value="" disabled selected>Toca aquí para buscar tu nombre...</option>
                                 <option value="Francisco Xavier Quintana Ortega">Francisco Xavier Quintana Ortega</option>
                                 <option value="Lic. Jennifer Gabriela Santos Javier">Lic. Jennifer Gabriela Santos Javier</option>
                                 <option value="Ing. Israel Pastelín Morales">Ing. Israel Pastelín Morales</option>
-                                <option value="Ing. José Salazar Gasperino">Ing. José Salazar Gasperino</option>
+                                <option value="Ing. José Salazar Gaspariano">Ing. José Salazar Gaspariano</option>
                                 <option value="Ing. Erick Jair García González">Ing. Erick Jair García González</option>
                                 <option value="Ing. Dagoberto de Jesús Guevara Díaz">Ing. Dagoberto de Jesús Guevara Díaz</option>
                                 <option value="L.C. Maribel Lozano Lázaro">L.C. Maribel Lozano Lázaro</option>
@@ -95,6 +95,7 @@
                                 <option value="Ing. Juan Pablo Lares Larragoitia">Ing. Juan Pablo Lares Larragoitia</option>
                                 <option value="Cristian Barragán Cruz">Cristian Barragán Cruz</option>
                                 <option value="Ing. José Angel Blanco Aviles">Ing. José Angel Blanco Aviles</option>
+                                <option value="Julio Enriquez Fernandez">Julio Enriquez Fernandez</option>
                             </select>
                         </div>
                     </div>
@@ -104,7 +105,7 @@
                             Tu estado actual aparecerá aquí.
                         </div>
                         
-                        <button id="btnRegistrarAccion" onclick="ejecutarAccion()" class="w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-3">
+                        <button id="btnRegistrarAccion" onclick="window.ejecutarAccion()" class="w-full py-4 px-6 rounded-xl text-white font-bold text-lg shadow-md transition-transform transform active:scale-95 flex items-center justify-center gap-3">
                             <i id="iconoAccion" class="fa-solid fa-clock"></i>
                             <span id="textoAccion">Registrar</span>
                         </button>
@@ -123,7 +124,7 @@
                     <p class="text-sm text-slate-500 mt-1">Sincronizado con Google Sheets.</p>
                 </div>
                 <div class="flex gap-3">
-                    <button onclick="cargarRegistros()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-2 px-4 rounded-lg shadow-sm transition duration-200 flex items-center gap-2">
+                    <button onclick="window.cargarRegistros()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-2 px-4 rounded-lg shadow-sm transition duration-200 flex items-center gap-2">
                         <i class="fa-solid fa-rotate"></i> Actualizar
                     </button>
                     <a href="#" target="_blank" id="btnAbrirSheets" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition duration-200 flex items-center gap-2">
@@ -167,19 +168,15 @@
         // 1. CONFIGURACIÓN DE LA API Y SEGURIDAD
         // =========================================================================
 
-        // Pega aquí el NUEVO enlace que te dará Google Apps Script
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzJh9sNeOEj5zhrLJxkMgFbxbl8qFnzCAHzWiLTJT_hwRRax8TkkHWt1EfYTZ3y-bEmQA/exec"; 
-        // Pega aquí el enlace directo a tu documento de Google Sheets
         const SHEETS_URL = "https://docs.google.com/spreadsheets/d/1VbmjtK1wdnqEnu3pSJ0ZVm9-CbUdHWVbS7K5XaGp5gE/edit?gid=0#gid=0"; 
-
-        // Cambia tu contraseña de administrador aquí:
         const PASSWORD_ADMIN = "15229";
 
         let registros = [];
         let estadoActualEmpleado = null;
         let esAdminVerificado = false; 
 
-        // Función para el reloj anti-congelamiento
+        // Reloj anti-congelamiento
         function actualizarReloj() {
             const ahora = new Date();
             const elementoReloj = document.getElementById('relojActual');
@@ -195,7 +192,7 @@
             }
         });
 
-        // Nueva función para obtener la fecha local exacta y evitar el salto de día a las 7 PM
+        // Obtener la fecha local exacta (Evita el salto de día a las 7 PM)
         function obtenerFechaLocal() {
             const hoy = new Date();
             const anio = hoy.getFullYear();
@@ -205,7 +202,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            actualizarReloj(); // Actualiza el reloj inmediatamente al cargar
+            actualizarReloj();
 
             if(SCRIPT_URL === "TU_ENLACE_DE_APPS_SCRIPT_AQUI" || SCRIPT_URL === "") {
                 document.getElementById('alertaConfiguracion').classList.remove('hidden');
@@ -218,7 +215,6 @@
             const strHoy = obtenerFechaLocal();
             document.getElementById('filtroFecha').value = strHoy;
 
-            // Añade estas líneas justo debajo para que el botón de Sheets funcione:
             if (SHEETS_URL && SHEETS_URL !== "TU_ENLACE_DE_SHEETS_AQUI") {
                 document.getElementById('btnAbrirSheets').href = SHEETS_URL;
             } else {
@@ -227,7 +223,7 @@
 
             const urlParams = new URLSearchParams(window.location.search);
             if(urlParams.get('modo') === 'checador') {
-                cambiarVista('kiosko');
+                window.cambiarVista('kiosko');
                 document.getElementById('navbarPrincipal').style.display = 'none';
                 document.getElementById('mensajeQR').style.display = 'none'; 
             }
@@ -238,11 +234,11 @@
                 if(deptoSelect) deptoSelect.value = deptoGuardado;
             }
 
-            cargarRegistros();
+            window.cargarRegistros();
             
             setInterval(() => {
                 if(document.getElementById('vistaAdmin').classList.contains('block')) {
-                    cargarRegistros();
+                    window.cargarRegistros();
                 }
             }, 30000);
         });
@@ -280,11 +276,10 @@
                 divAdmin.classList.add('block');
                 divKiosko.classList.add('hidden');
                 divKiosko.classList.remove('block');
-                cargarRegistros(); 
+                window.cargarRegistros(); 
             }
         };
 
-        // Función auxiliar para asegurarnos que la fecha de Excel coincida con la del sistema web
         function normalizarFechaExcel(fechaTexto) {
             if (!fechaTexto) return "";
             if (fechaTexto.includes('/')) {
@@ -297,10 +292,22 @@
         // ==========================================
         // 2. COMUNICACIÓN CON GOOGLE SHEETS
         // ==========================================
-        async function cargarRegistros() {
+        window.cargarRegistros = async function() {
             if(SCRIPT_URL.includes("TU_ENLACE") || SCRIPT_URL === "") return;
             try {
-                const response = await fetch(SCRIPT_URL);
+                // CORRECCIÓN: Rompe-caché extremo para Safari y Chrome Móvil
+                const urlAntiCache = SCRIPT_URL + "?t=" + new Date().getTime();
+                
+                const response = await fetch(urlAntiCache, {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
+                
                 const data = await response.json();
                 
                 if (data.status === "error") {
@@ -314,7 +321,8 @@
                     nombre: fila.Nombre,
                     horaEntrada: fila.Entrada,
                     horaInicioComida: fila.InicioComida,
-                    horaTerminoComida: fila.TerminoComida,
+                    // CORRECCIÓN: Lee FinComida o TerminoComida sin romperse
+                    horaTerminoComida: fila.FinComida || fila.TerminoComida, 
                     horaSalida: fila.Salida
                 }));
                 
@@ -325,7 +333,7 @@
             } catch (error) {
                 console.error("Error al cargar Google Sheets:", error);
             }
-        }
+        };
 
         window.ejecutarAccion = async function() {
             if(!estadoActualEmpleado) return;
@@ -342,7 +350,6 @@
             const departamento = document.getElementById('kioskoDepartamento').value || "General";
             const ahora = new Date();
             
-            // CORRECCIÓN: Usamos obtenerFechaLocal() en lugar de toISOString()
             const hoyStr = obtenerFechaLocal(); 
             const horaStr = ahora.toLocaleTimeString('es-MX', { hour12: false, hour: '2-digit', minute:'2-digit' });
 
@@ -366,7 +373,7 @@
                     window.mostrarToast(`Registro exitoso: ${horaStr}`);
                     document.getElementById('kioskoEmpleado').value = "";
                     document.getElementById('zonaAccion').classList.add('hidden');
-                    await cargarRegistros(); // Refresca los datos para mostrar el siguiente botón correcto
+                    await window.cargarRegistros(); 
                 } else {
                     console.error("Error del servidor:", result.message);
                     window.mostrarToast(`Error: ${result.message}`, 'error');
@@ -391,7 +398,7 @@
                 
                 if(result.status === 'success') {
                     window.mostrarToast('Registro eliminado.');
-                    cargarRegistros();
+                    window.cargarRegistros();
                 }
             } catch (error) {
                 window.mostrarToast('Error al eliminar', 'error');
@@ -415,11 +422,7 @@
             }
 
             zonaAccion.classList.remove('hidden');
-            
-            // CORRECCIÓN: Usamos obtenerFechaLocal() en lugar de toISOString()
             const hoyStr = obtenerFechaLocal(); 
-            
-            // Busca si ya hay un registro de ESTE empleado en ESTA fecha
             const registroHoy = registros.find(r => r.nombre === empleadoId && r.fecha === hoyStr);
 
             if (!registroHoy) {
@@ -485,7 +488,7 @@
                     <td class="px-4 py-3 text-orange-500">${r.horaTerminoComida || '--:--'}</td>
                     <td class="px-4 py-3 text-red-600 font-semibold">${r.horaSalida || '--:--'}</td>
                     <td class="px-4 py-3 text-center">
-                        <button onclick="eliminarRegistro('${r.fecha}', '${r.nombre}')" class="text-slate-400 hover:text-red-600 transition-colors" title="Eliminar del Excel">
+                        <button onclick="window.eliminarRegistro('${r.fecha}', '${r.nombre}')" class="text-slate-400 hover:text-red-600 transition-colors" title="Eliminar del Excel">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </td>
